@@ -75,6 +75,53 @@ final class VaultStore {
         }
     }
 
+    // MARK: Sauvegarde chiffrée
+
+    /// Les entrées à exporter, après Face ID / Touch ID / le code quand le verrouillage
+    /// biométrique est actif. `nil` : refusé ou illisible.
+    func entriesForExport(requireAuthentication: Bool) async -> [VaultItem]? {
+        if requireAuthentication {
+            guard await BiometricAuth.authenticate(reason: "Autorisez l'export chiffré de votre coffre") else {
+                return nil
+            }
+        }
+        if !isLocked { return items }
+        do {
+            return try decode(keychain.load())
+        } catch {
+            errorMessage = error.localizedDescription
+            return nil
+        }
+    }
+
+    /// Ajoute les entrées d'une sauvegarde absentes du coffre (même identifiant :
+    /// ignorée). Renvoie le nombre d'entrées ajoutées, `nil` si le coffre est illisible.
+    func importEntries(_ incoming: [VaultItem]) -> Int? {
+        let current: [VaultItem]
+        if isLocked {
+            do {
+                current = try decode(keychain.load())
+            } catch {
+                // Jamais d'écriture par-dessus un coffre qu'on n'a pas pu lire.
+                errorMessage = error.localizedDescription
+                return nil
+            }
+        } else {
+            current = items
+        }
+        let known = Set(current.map(\.id))
+        var seen = Set<UUID>()
+        let fresh = incoming.filter { !known.contains($0.id) && seen.insert($0.id).inserted }
+        guard !fresh.isEmpty else { return 0 }
+        if isLocked {
+            write(current + fresh)
+        } else {
+            items = current + fresh
+            persist()
+        }
+        return fresh.count
+    }
+
     func eraseAll() {
         do {
             try keychain.delete()
