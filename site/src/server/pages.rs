@@ -501,6 +501,7 @@ fn site_footer(ctx: &Ctx) -> Element {
                         (ctx.home("features"), t("Fonctionnalités", "Features"), "sparkles"),
                         (ctx.home("generator"), t("Générateur en ligne", "Online generator"), "dice"),
                         (ctx.home("analyzer"), t("Testeur de robustesse", "Strength tester"), "gauge"),
+                        (ctx.home("brocolis"), t("Scelleur Brocolis 🥦", "Brocolis sealer 🥦"), "lock"),
                         (ctx.home("screens"), t("Captures d'écran", "Screenshots"), "phone"),
                         (ctx.home("download"), t("Télécharger", "Download"), "download"),
                         (ctx.href(PageKind::Changelog), t("Nouveautés", "What's new"), "bolt"),
@@ -523,6 +524,7 @@ fn site_footer(ctx: &Ctx) -> Element {
                         (format!("{REPO}/issues/new"), t("Signaler un problème", "Report a bug"), "mail"),
                         (format!("{REPO}/security"), t("Signaler une faille", "Report a vulnerability"), "shield"),
                         (REPO.into(), t("Code source", "Source code"), "github"),
+                        (BROCOLIS.into(), t("Chiffrement : brocolis", "Encryption: brocolis"), "shield"),
                         (format!("{REPO}/releases"), t("Versions", "Releases"), "layers"),
                     ],
                 ))
@@ -546,6 +548,7 @@ fn site_footer(ctx: &Ctx) -> Element {
                     ("cookie", t("Zéro cookie", "Zero cookies")),
                     ("faceid", "Face ID & Touch ID"),
                     ("lock", t("Trousseau iOS chiffré", "Encrypted iOS Keychain")),
+                    ("shield", t("Chiffré par Brocolis 🥦", "Encrypted by Brocolis 🥦")),
                     ("bolt", t("Rust · WebAssembly", "Rust · WebAssembly")),
                 ]
                 .into_iter()
@@ -582,7 +585,14 @@ fn site_footer(ctx: &Ctx) -> Element {
                                 .attr("rel", "noopener")
                                 .text("Paquets 📦"),
                         )
-                        .child(span().text(t(", Rust et WebAssembly · site v", ", Rust and WebAssembly · site v")))
+                        .child(span().text(t(", chiffré par ", ", encrypted by ")))
+                        .child(
+                            a().href(BROCOLIS)
+                                .attr("target", "_blank")
+                                .attr("rel", "noopener")
+                                .text("Brocolis 🥦"),
+                        )
+                        .child(span().text(t(", en Rust et WebAssembly · site v", ", in Rust and WebAssembly · site v")))
                         .child(span().text(VERSION)),
                 )
                 .child(
@@ -933,6 +943,10 @@ fn marquee(ctx: &Ctx) -> Element {
                 ("eyeoff", t("Aucun traqueur", "No trackers")),
                 ("lock", t("Verrouillage automatique", "Auto-lock")),
                 ("sparkles", t("Animations soignées", "Crafted animations")),
+                (
+                    "shield",
+                    t("Chiffrement Brocolis 🥦", "Brocolis encryption 🥦"),
+                ),
                 ("heart", t("Sans publicité", "No ads")),
             ],
             true,
@@ -1210,6 +1224,79 @@ fn analyzer_section(ctx: &Ctx) -> Element {
                 .attr("data-reveal", "")
                 .style("--d:2")
                 .child(island("analyzer", ctx.lang().code(), islands::analyzer)),
+        )
+}
+
+pub const BROCOLIS: &str = "https://github.com/maxlestage/brocolis";
+
+fn brocolis_section(ctx: &Ctx) -> Element {
+    let t = |fr, en| ctx.t(fr, en);
+    let steps = [
+        (
+            "words",
+            t("Une phrase", "A passphrase"),
+            t(
+                "Argon2id, 64 Mio, 3 passes : chaque essai coûte cher à l'attaquant.",
+                "Argon2id, 64 MiB, 3 passes: every guess is expensive for an attacker.",
+            ),
+        ),
+        (
+            "key",
+            t("Une clé neuve", "A fresh key"),
+            t(
+                "32 octets tirés au hasard, protégés par la phrase : [[BROCOLIS-CLE:v2:…]].",
+                "32 random bytes, protected by the passphrase: [[BROCOLIS-CLE:v2:…]].",
+            ),
+        ),
+        (
+            "lock",
+            t("Un jeton scellé", "A sealed token"),
+            t(
+                "Le texte chiffré en AES-256-GCM sous cette clé : [[BROCOLIS:v1:…]].",
+                "The text encrypted with AES-256-GCM under that key: [[BROCOLIS:v1:…]].",
+            ),
+        ),
+    ];
+    section()
+        .class("section section--glow brocolis")
+        .id("brocolis")
+        .child(
+            div()
+                .class("wrap split-section split-section--flip")
+                .child(
+                    div()
+                        .class("split-section__copy")
+                        .child(eyebrow(t("Chiffrement Brocolis 🥦", "Brocolis encryption 🥦")))
+                        .child(split(h2, t("Scellez un secret, ouvrez-le n'importe où.", "Seal a secret, open it anywhere.")))
+                        .child(p().class("lead").attr("data-reveal", "").text(t(
+                            "KeyForge confie son chiffrement à Brocolis 🥦 : ses formats, ses vecteurs de test, sa crate Rust. Ici, dans votre navigateur, comme dans la sauvegarde chiffrée de l'app iOS, octet pour octet.",
+                            "KeyForge hands its encryption to Brocolis 🥦: its formats, its test vectors, its Rust crate. Here, in your browser, as in the iOS app's encrypted backup, byte for byte.",
+                        )))
+                        .child(div().class("chain").children(steps.into_iter().enumerate().map(|(i, (ic, title, body))| {
+                            div()
+                                .class("chain__step")
+                                .attr("data-reveal", "")
+                                .style(format!("--d:{i}"))
+                                .child(span().class("point__icon").child(icon(ic)))
+                                .child(div().child(h3().text(title)).child(p().text(body)))
+                        })))
+                        .child(
+                            a().class("btn btn--ghost")
+                                .href(BROCOLIS)
+                                .attr("target", "_blank")
+                                .attr("rel", "noopener")
+                                .attr("data-magnetic", "")
+                                .child(icon("github"))
+                                .child(span().text(t("Le dépôt brocolis", "The brocolis repository"))),
+                        ),
+                )
+                .child(
+                    div()
+                        .class("panel panel--tight")
+                        .attr("data-reveal", "")
+                        .style("--d:2")
+                        .child(island("sealer", ctx.lang().code(), islands::sealer)),
+                ),
         )
 }
 
@@ -1576,6 +1663,13 @@ pub fn faq_items(lang: Lang) -> Vec<(&'static str, &'static str)> {
             ),
         ),
         (
+            t("Qu'est-ce que Brocolis 🥦 ?", "What is Brocolis 🥦?"),
+            t(
+                "Le projet de chiffrement auquel KeyForge confie ses formats : clés protégées par une phrase (Argon2id) et jetons AES-256-GCM, avec une implémentation de référence en Rust et des vecteurs de test. La sauvegarde chiffrée de l'app et le scelleur de ce site produisent exactement ses octets, lisibles par les apps Brocolis.",
+                "The encryption project KeyForge hands its formats to: passphrase-protected keys (Argon2id) and AES-256-GCM tokens, with a reference implementation in Rust and test vectors. The app's encrypted backup and this site's sealer produce exactly its bytes, readable by the Brocolis apps.",
+            ),
+        ),
+        (
             t("Le code est-il public ?", "Is the code public?"),
             t(
                 "Le site et l'application sont développés dans le dépôt GitHub du projet : vous pouvez y lire le code, suivre les versions et signaler un problème.",
@@ -1674,6 +1768,7 @@ fn home(ctx: &Ctx) -> Page {
         .child(steps(ctx))
         .child(generator_section(ctx))
         .child(analyzer_section(ctx))
+        .child(brocolis_section(ctx))
         .child(security(ctx))
         .child(screens(ctx))
         .child(compare(ctx))

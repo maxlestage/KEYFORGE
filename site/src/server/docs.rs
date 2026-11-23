@@ -302,6 +302,45 @@ fn security(l: Lang) -> Doc {
                 ))],
             ),
             sec(
+                "brocolis",
+                t("Le chiffrement Brocolis 🥦", "Brocolis encryption 🥦"),
+                vec![
+                    Block::P(t(
+                        "Pour la sauvegarde chiffrée du coffre, KeyForge n'invente rien : il utilise les formats de Brocolis, un projet de chiffrement doté d'une implémentation de référence en Rust (brocolis-proto) et de vecteurs de test publics. L'app iOS les retrouve octet pour octet, et ce site se sert directement de la crate, compilée en WebAssembly.",
+                        "For the vault's encrypted backup, KeyForge invents nothing: it uses the formats of Brocolis, an encryption project with a reference implementation in Rust (brocolis-proto) and public test vectors. The iOS app matches them byte for byte, and this website uses the crate directly, compiled to WebAssembly.",
+                    )),
+                    Block::List(vec![
+                        t(
+                            "Une clé aléatoire de 32 octets, protégée par votre phrase : Argon2id (64 Mio, 3 passes), puis AES-256-GCM avec l'en-tête et les paramètres authentifiés — [[BROCOLIS-CLE:v2:…]].",
+                            "A random 32-byte key, protected by your passphrase: Argon2id (64 MiB, 3 passes), then AES-256-GCM with the header and parameters authenticated — [[BROCOLIS-CLE:v2:…]].",
+                        ),
+                        t(
+                            "Le contenu chiffré en AES-256-GCM sous cette clé, avec un nonce aléatoire de 12 octets — [[BROCOLIS:v1:…]].",
+                            "The content encrypted with AES-256-GCM under that key, with a random 12-byte nonce — [[BROCOLIS:v1:…]].",
+                        ),
+                        t(
+                            "Une phrase de 8 caractères au moins ; KeyForge en propose une de six mots (60 bits).",
+                            "A passphrase of at least 8 characters; KeyForge suggests a six-word one (60 bits).",
+                        ),
+                        t(
+                            "À l'import, des paramètres Argon2id hors bornes sont refusés avant tout calcul.",
+                            "On import, out-of-bounds Argon2id parameters are refused before any computation.",
+                        ),
+                    ]),
+                    Block::View(
+                        a().class("btn btn--ghost")
+                            .href(super::pages::BROCOLIS)
+                            .attr("target", "_blank")
+                            .attr("rel", "noopener")
+                            .child(icon("github"))
+                            .child(
+                                span()
+                                    .text(t("Voir brocolis sur GitHub", "See brocolis on GitHub")),
+                            ),
+                    ),
+                ],
+            ),
+            sec(
                 "network",
                 t("Le réseau", "The network"),
                 vec![Block::P(t(
@@ -609,8 +648,8 @@ fn help(l: Lang) -> Doc {
                     Block::Note(
                         "vault",
                         t(
-                            "Le coffre est vide sur un nouvel iPhone : il est lié à l'appareil et n'est ni synchronisé ni restauré ailleurs, par conception. Recréez vos entrées depuis votre copie de secours.",
-                            "The vault is empty on a new iPhone: it is tied to the device and neither synced nor restored elsewhere, by design. Recreate your entries from your backup.",
+                            "Le coffre est vide sur un nouvel iPhone : il est lié à l'appareil et n'est ni synchronisé ni restauré ailleurs, par conception. Restaurez-le depuis une sauvegarde chiffrée Brocolis 🥦 (Réglages → Sauvegarde chiffrée).",
+                            "The vault is empty on a new iPhone: it is tied to the device and neither synced nor restored elsewhere, by design. Restore it from a Brocolis 🥦 encrypted backup (Settings → Encrypted backup).",
                         ),
                     ),
                 ],
@@ -700,6 +739,10 @@ fn changelog(l: Lang) -> Doc {
                             "Self-clearing clipboard, blurred screen in the background.",
                         ),
                         t(
+                            "Sauvegarde chiffrée du coffre au format Brocolis 🥦 (Argon2id + AES-256-GCM).",
+                            "Encrypted vault backup in the Brocolis 🥦 format (Argon2id + AES-256-GCM).",
+                        ),
+                        t(
                             "Découverte animée en trois écrans, thème sombre « forge ».",
                             "Animated three-screen onboarding, dark “forge” theme.",
                         ),
@@ -725,6 +768,10 @@ fn changelog(l: Lang) -> Doc {
                         t(
                             "Installable (PWA) et disponible hors ligne.",
                             "Installable (PWA) and available offline.",
+                        ),
+                        t(
+                            "Scelleur de secrets chiffré par Brocolis 🥦, dans le navigateur.",
+                            "Secret sealer encrypted by Brocolis 🥦, in the browser.",
                         ),
                         t(
                             "En français et en anglais, thème clair et sombre.",
@@ -922,6 +969,10 @@ fn privacy(l: Lang) -> Doc {
                 t("L'application", "The app"),
                 vec![
                     Block::P(t(
+                        "Une sauvegarde chiffrée n'est créée que si vous la demandez : c'est un texte chiffré par Brocolis 🥦 sous votre phrase, que vous gardez où vous voulez. Personne ne peut l'ouvrir sans cette phrase, pas même l'éditeur.",
+                        "An encrypted backup is only created when you ask for it: a text encrypted by Brocolis 🥦 under your passphrase, kept wherever you choose. Nobody can open it without that passphrase, not even the publisher.",
+                    )),
+                    Block::P(t(
                         "Vos secrets, identifiants et notes sont enregistrés uniquement sur votre iPhone, dans le Trousseau iOS. Vos réglages sont gardés dans les préférences locales de l'app. Rien n'est transmis à l'éditeur ni à des tiers.",
                         "Your secrets, usernames and notes are stored only on your iPhone, in the iOS Keychain. Your settings are kept in the app's local preferences. Nothing is sent to the publisher or to third parties.",
                     )),
@@ -1081,6 +1132,10 @@ fn legal(l: Lang) -> Doc {
                     t(
                         "Site construit avec Paquets, en Rust et WebAssembly.",
                         "Website built with Paquets, in Rust and WebAssembly.",
+                    ),
+                    t(
+                        "Chiffrement fourni par Brocolis 🥦 (brocolis-proto).",
+                        "Encryption provided by Brocolis 🥦 (brocolis-proto).",
                     ),
                     t(
                         "Application iOS écrite en Swift et SwiftUI.",

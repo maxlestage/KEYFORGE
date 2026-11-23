@@ -331,3 +331,48 @@ pub fn prompt_install(installable: State<bool>) {
     }
     installable.set(false);
 }
+
+// ----- Brocolis 🥦 -----------------------------------------------------------------------
+
+/// Une phrase secrète neuve : six mots de la liste (60 bits), séparés par des tirets.
+pub fn new_phrase() -> String {
+    let options = Options {
+        mode: forge::Mode::Passphrase,
+        length: 6,
+        capitalize: false,
+        add_number: false,
+        separator: '-',
+        ..Options::default()
+    };
+    forge::generate(&options, &mut CryptoRng::new())
+}
+
+/// Scelle ou ouvre, après avoir laissé le navigateur afficher l'attente : Argon2id
+/// (64 Mio) prend une à quelques secondes et occupe le fil principal.
+pub fn seal_or_open(
+    lang: crate::i18n::Lang,
+    opening: bool,
+    text: String,
+    phrase: String,
+    output: State<String>,
+    error: State<String>,
+    busy: State<bool>,
+) {
+    later(120, move || {
+        let result = if opening {
+            crate::seal::open(&text, &phrase)
+        } else {
+            crate::seal::seal(
+                &text,
+                &phrase,
+                crate::seal::PARAMS,
+                &mut brocolis_proto::hasard::system(),
+            )
+        };
+        match result {
+            Ok(out) => output.set(out),
+            Err(e) => error.set(crate::islands::seal_error(lang, &e).to_owned()),
+        }
+        busy.set(false);
+    });
+}
