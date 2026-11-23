@@ -117,7 +117,7 @@ private struct ExportPane: View {
         VStack(alignment: .leading, spacing: 16) {
             Label("Une phrase pour tout protéger", systemImage: "key.horizontal.fill")
                 .font(.headline)
-            Text("Votre coffre est chiffré avec une clé aléatoire, elle-même protégée par cette phrase (Argon2id puis AES-256-GCM). Sans la phrase, la sauvegarde est illisible : notez-la en lieu sûr.")
+            Text("Votre coffre est chiffré avec une clé aléatoire de 256 bits, elle-même protégée par cette phrase (Argon2id puis AES-256-GCM), dans le format Brocolis v4. Sans la phrase, la sauvegarde est illisible : notez-la en lieu sûr.")
                 .font(.subheadline)
                 .foregroundStyle(Color.textSecondary)
 
@@ -304,7 +304,7 @@ private struct ImportPane: View {
                     .autocorrectionDisabled()
                     .textInputAutocapitalization(.never)
                 if text.isEmpty {
-                    Text("[[BROCOLIS-CLE:v2:…]]\n[[BROCOLIS:v1:…]]")
+                    Text("[[BROCOLIS-CLE:v2:…]]\n[[BROCOLIS:v4:…]]")
                         .font(.system(.footnote, design: .monospaced))
                         .foregroundStyle(Color.textSecondary.opacity(0.6))
                         .padding(16)
@@ -517,7 +517,7 @@ private struct BrocolisBadge: View {
         VStack(spacing: 6) {
             Text("Format Brocolis 🥦, compatible avec les apps Brocolis")
                 .font(.footnote.weight(.semibold))
-            Text("Clé protégée [[BROCOLIS-CLE:v2]] (Argon2id 64 Mio, AES-256-GCM) et coffre en jeton [[BROCOLIS:v1]]. Tout se passe sur cet iPhone : rien n'est envoyé.")
+            Text("Clé protégée [[BROCOLIS-CLE:v2]] (Argon2id 64 Mio, AES-256-GCM) et coffre en message Brocolis v4 [[BROCOLIS:v4]] (clé partagée de 256 bits, résistante aux ordinateurs quantiques). Les anciennes sauvegardes [[BROCOLIS:v1]] restent lisibles. Tout se passe sur cet iPhone : rien n'est envoyé.")
                 .font(.caption)
                 .multilineTextAlignment(.center)
                 .foregroundStyle(Color.textSecondary)

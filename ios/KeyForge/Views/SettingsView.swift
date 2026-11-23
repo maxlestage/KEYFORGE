@@ -6,6 +6,7 @@ struct SettingsView: View {
     @Environment(ToastCenter.self) private var toasts
     @State private var confirmErase = false
     @State private var backupMode: BackupView.Mode?
+    @State private var composing = false
 
     private var version: String {
         let info = Bundle.main.infoDictionary
@@ -65,6 +66,29 @@ struct SettingsView: View {
                 .listRowBackground(Color.surface)
 
                 Section {
+                    NavigationLink {
+                        IdentityView()
+                    } label: {
+                        Label("Mon identité post-quantique", systemImage: "atom")
+                    }
+                    Button {
+                        composing = true
+                    } label: {
+                        Label("Envoyer un secret chiffré", systemImage: "paperplane.fill")
+                    }
+                    NavigationLink {
+                        ReceiveEncryptedView()
+                    } label: {
+                        Label("Recevoir un secret chiffré", systemImage: "envelope.open.fill")
+                    }
+                } header: {
+                    Text("Chiffrement post-quantique")
+                } footer: {
+                    Text("Protocole Brocolis v4 🥦 : X25519 + ML-KEM-768. Un secret envoyé reste protégé tant que l'une des deux protections tient, même face à un ordinateur quantique. Votre identité ne quitte pas cet iPhone.")
+                }
+                .listRowBackground(Color.surface)
+
+                Section {
                     Button {
                         backupMode = .exporting
                     } label: {
@@ -78,7 +102,7 @@ struct SettingsView: View {
                 } header: {
                     Text("Sauvegarde chiffrée")
                 } footer: {
-                    Text("Format Brocolis 🥦, compatible avec les apps Brocolis : votre coffre est chiffré sur cet iPhone (Argon2id, AES-256-GCM) avec une phrase que vous seul connaissez. Le fichier se garde où vous voulez.")
+                    Text("Format Brocolis 🥦 v4, compatible avec les apps Brocolis : votre coffre est chiffré sur cet iPhone (Argon2id, puis une clé de 256 bits résistante aux ordinateurs quantiques) avec une phrase que vous seul connaissez. Le fichier se garde où vous voulez.")
                 }
                 .listRowBackground(Color.surface)
 
@@ -117,6 +141,10 @@ struct SettingsView: View {
             .scrollContentBackground(.hidden)
             .background(ForgeBackground(intensity: 0.4))
             .navigationTitle("Réglages")
+            .sheet(isPresented: $composing) {
+                SendEncryptedView()
+                    .presentationDragIndicator(.visible)
+            }
             .sheet(item: $backupMode) { mode in
                 BackupView(mode: mode)
                     .presentationDragIndicator(.visible)

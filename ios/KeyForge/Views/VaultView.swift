@@ -285,6 +285,7 @@ struct VaultDetailView: View {
     @State private var revealed = false
     @State private var editing: VaultItem?
     @State private var confirmDelete = false
+    @State private var sending = false
 
     private var item: VaultItem? { vault.items.first { $0.id == itemID } }
 
@@ -358,6 +359,17 @@ struct VaultDetailView: View {
                         .forgeCard()
                         .entrance(delay: 0.08)
 
+                        Button {
+                            Haptics.tap()
+                            sending = true
+                        } label: {
+                            Label("Envoyer chiffré · post-quantique", systemImage: "paperplane.fill")
+                                .frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(EmberButtonStyle())
+                        .accessibilityHint("Chiffre ce mot de passe pour le paquet de clés d'un destinataire")
+                        .entrance(delay: 0.12)
+
                         Text("Modifié le \(item.updatedAt.formatted(date: .long, time: .shortened))")
                             .font(.caption)
                             .foregroundStyle(Color.textSecondary)
@@ -371,6 +383,11 @@ struct VaultDetailView: View {
                                 editing = item
                             } label: {
                                 Label("Modifier", systemImage: "pencil")
+                            }
+                            Button {
+                                sending = true
+                            } label: {
+                                Label("Envoyer chiffré", systemImage: "paperplane")
                             }
                             Button {
                                 vault.toggleFavorite(item)
@@ -402,6 +419,12 @@ struct VaultDetailView: View {
         }
         .background(ForgeBackground(intensity: 0.5))
         .navigationBarTitleDisplayMode(.inline)
+        .sheet(isPresented: $sending) {
+            if let item {
+                SendEncryptedView(secret: item.password, subject: item.title.isEmpty ? nil : item.title)
+                    .presentationDragIndicator(.visible)
+            }
+        }
         .sheet(item: $editing) { item in
             VaultEditView(item: item, isNew: false) { saved in
                 vault.upsert(saved)
