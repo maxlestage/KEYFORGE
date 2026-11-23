@@ -1,0 +1,76 @@
+[package]
+name = "keyforge-site"
+version = "0.1.0"
+edition = "2024"
+publish = false
+description = "Le site de KeyForge, écrit avec Paquets : pages rendues par le serveur, îlots WebAssembly, PWA."
+
+# Crate autonome (son propre workspace).
+[workspace]
+
+# La bibliothèque contient ce que le serveur et le navigateur partagent (textes, routes,
+# îlots) et, compilée en WebAssembly, le bundle du navigateur. Le binaire est le serveur.
+[lib]
+name = "keyforge_site"
+crate-type = ["cdylib", "rlib"]
+
+[[bin]]
+name = "keyforge-site"
+path = "src/main.rs"
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+# Pas de base de données : le site n'en a pas besoin (features par défaut désactivées).
+paquets = { git = "https://github.com/maxlestage/Paquets", default-features = false }
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+paquets = { git = "https://github.com/maxlestage/Paquets", default-features = false, features = ["client"] }
+wasm-bindgen = "0.2"
+wasm-bindgen-futures = "0.4"
+js-sys = "0.3"
+web-sys = { version = "0.3", features = [
+  "AddEventListenerOptions",
+  "Clipboard",
+  "Crypto",
+  "CssStyleDeclaration",
+  "Document",
+  "DomRect",
+  "DomStringMap",
+  "DomTokenList",
+  "Element",
+  "Event",
+  "EventTarget",
+  "HtmlElement",
+  "HtmlCanvasElement",
+  "CanvasRenderingContext2d",
+  "IntersectionObserver",
+  "IntersectionObserverEntry",
+  "IntersectionObserverInit",
+  "KeyboardEvent",
+  "Location",
+  "MediaQueryList",
+  "MouseEvent",
+  "Navigator",
+  "NodeList",
+  "PointerEvent",
+  "ScrollBehavior",
+  "ScrollToOptions",
+  "Storage",
+  "Window",
+] }
+
+[dev-dependencies]
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+
+[profile.release]
+lto = "thin"
+codegen-units = 1
+strip = true
+
+# Le bundle du navigateur : `cargo build --lib --target wasm32-unknown-unknown --profile wasm-release`.
+[profile.wasm-release]
+inherits = "release"
+opt-level = "s"
+lto = true
+panic = "abort"
+# Pas `strip = true` : wasm-bindgen lit la section `target_features`.
+strip = false

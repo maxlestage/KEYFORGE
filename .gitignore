@@ -1,0 +1,11 @@
+# Site (Rust)
+/site/target
+/site/pkg
+# iOS (Xcode)
+xcuserdata/
+DerivedData/
+*.xcresult
+build/
+# Système
+.DS_Store
+.env

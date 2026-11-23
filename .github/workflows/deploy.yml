@@ -1,0 +1,136 @@
+# Déploie le site sur Heroku après chaque CI verte de master (et à la main :
+# Actions → Déployer le site → Run workflow).
+#
+# L'image Docker est construite ICI, dans GitHub Actions (site/Dockerfile), puis poussée
+# dans le registre de conteneurs de Heroku et publiée par l'API Platform : pas de CLI
+# Heroku, et le jeton des dépôts privés (REPOS_TOKEN) ne quitte jamais GitHub.
+#
+# Configuration (GitHub → Settings → Secrets and variables → Actions) :
+#   - secret    HEROKU_API_KEY   Heroku → Account settings → API Key
+#   - variable  HEROKU_APP_NAME  le nom de l'application (créée si elle n'existe pas)
+#   - variable  HEROKU_REGION    facultative : us (par défaut) ou eu
+#   - secret    REPOS_TOKEN      facultatif : un jeton qui peut lire les dépôts de Paquets
+# Sans HEROKU_API_KEY ou HEROKU_APP_NAME, le déploiement est simplement sauté.
+
+name: Déployer le site
+
+on:
+  workflow_run:
+    workflows: [Site]
+    types: [completed]
+    branches: [master]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-heroku
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Heroku
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: ${{ steps.release.outputs.url }}
+    env:
+      HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+      APP: ${{ vars.HEROKU_APP_NAME }}
+      REGION: ${{ vars.HEROKU_REGION || 'us' }}
+    steps:
+      - name: Configuration
+        id: config
+        run: |
+          if [ -z "${HEROKU_API_KEY:-}" ] || [ -z "${APP:-}" ]; then
+            echo "::notice::Heroku n'est pas configuré : ajoutez le secret HEROKU_API_KEY et la variable HEROKU_APP_NAME (Settings → Secrets and variables → Actions)."
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@v4
+        if: steps.config.outputs.ready == 'true'
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+
+      - name: Application Heroku (création si besoin, pile container)
+        if: steps.config.outputs.ready == 'true'
+        run: |
+          set -euo pipefail
+          api() {
+            curl -fsS -H "Accept: application/vnd.heroku+json; version=3" \
+              -H "Authorization: Bearer $HEROKU_API_KEY" \
+              -H "Content-Type: application/json" "$@"
+          }
+          info="$RUNNER_TEMP/app.json"
+          status=$(curl -sS -o "$info" -w '%{http_code}' \
+            -H "Accept: application/vnd.heroku+json; version=3" \
+            -H "Authorization: Bearer $HEROKU_API_KEY" \
+            "https://api.heroku.com/apps/$APP")
+          case "$status" in
+            200) echo "Application $APP trouvée." ;;
+            404)
+              echo "Création de l'application $APP ($REGION)…"
+              api -X POST https://api.heroku.com/apps \
+                -d "{\"name\":\"$APP\",\"region\":\"$REGION\",\"stack\":\"container\"}" > "$info" ;;
+            401) echo "::error::Heroku refuse la clé d'API (HEROKU_API_KEY)."; exit 1 ;;
+            403) echo "::error::Ce compte Heroku ne peut pas utiliser l'application « $APP » (le nom est peut-être pris)."; exit 1 ;;
+            *) echo "::error::Réponse inattendue de Heroku ($status) : $(cat "$info")"; exit 1 ;;
+          esac
+          if [ "$(jq -r '.build_stack.name' "$info")" != "container" ]; then
+            echo "Passage de l'application sur la pile container…"
+            api -X PATCH "https://api.heroku.com/apps/$APP" -d '{"build_stack":"container"}' > /dev/null
+          fi
+
+      - uses: docker/setup-buildx-action@v3
+        if: steps.config.outputs.ready == 'true'
+
+      - name: Connexion au registre Heroku
+        if: steps.config.outputs.ready == 'true'
+        run: echo "$HEROKU_API_KEY" | docker login --username=_ --password-stdin registry.heroku.com
+
+      - name: Construire et pousser l'image
+        id: image
+        if: steps.config.outputs.ready == 'true'
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: site/Dockerfile
+          platforms: linux/amd64
+          push: true
+          # Heroku n'accepte pas les attestations ni les index multi-plateformes.
+          provenance: false
+          sbom: false
+          tags: registry.heroku.com/${{ vars.HEROKU_APP_NAME }}/web
+          secrets: |
+            repos_token=${{ secrets.REPOS_TOKEN }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Publier la version
+        id: release
+        if: steps.config.outputs.ready == 'true'
+        env:
+          IMAGE_ID: ${{ steps.image.outputs.imageid }}
+        run: |
+          set -euo pipefail
+          curl -fsS -X PATCH "https://api.heroku.com/apps/$APP/formation" \
+            -H "Accept: application/vnd.heroku+json; version=3.docker-releases" \
+            -H "Authorization: Bearer $HEROKU_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d "{\"updates\":[{\"type\":\"web\",\"docker_image\":\"$IMAGE_ID\"}]}" > /dev/null
+          url=$(curl -fsS -H "Accept: application/vnd.heroku+json; version=3" \
+            -H "Authorization: Bearer $HEROKU_API_KEY" "https://api.heroku.com/apps/$APP" | jq -r '.web_url')
+          url="${url%/}"
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+          echo "Attente du démarrage de $url…"
+          for _ in $(seq 1 40); do
+            if curl -fsS "$url/health" > /dev/null 2>&1; then
+              echo "### 🚀 Déployé sur [$url]($url)" >> "$GITHUB_STEP_SUMMARY"
+              echo "Déployé : $url"
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "::error::Le site ne répond pas sur $url/health après le déploiement."
+          exit 1
