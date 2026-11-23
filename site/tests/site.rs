@@ -31,6 +31,8 @@ async fn the_home_page_has_its_islands_and_sections() {
         r#"id="features""#,
         r#"id="generator""#,
         r#"id="analyzer""#,
+        r#"id="brocolis""#,
+        "Brocolis 🥦",
         r#"id="security""#,
         r#"id="screens""#,
         r#"id="faq""#,

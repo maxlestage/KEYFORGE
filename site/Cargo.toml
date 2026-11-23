@@ -18,6 +18,12 @@ crate-type = ["cdylib", "rlib"]
 name = "keyforge-site"
 path = "src/main.rs"
 
+[dependencies]
+# Le chiffrement de Brocolis 🥦 (https://github.com/maxlestage/brocolis) : clés protégées
+# par une phrase (Argon2id) et jetons AES-256-GCM, les mêmes octets que ses apps et que la
+# sauvegarde chiffrée de KeyForge sur iOS. Compile tel quel en WebAssembly.
+brocolis-proto = { git = "https://github.com/maxlestage/brocolis" }
+
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 # Pas de base de données : le site n'en a pas besoin (features par défaut désactivées).
 paquets = { git = "https://github.com/maxlestage/Paquets", default-features = false }

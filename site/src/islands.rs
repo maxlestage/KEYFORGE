@@ -15,8 +15,9 @@ fn lang(props: &str) -> Lang {
 }
 
 /// Chaque îlot, enregistré sous le nom utilisé par `island(...)`.
-pub const ISLANDS: [(&str, paquets::active::IslandFn); 4] = [
+pub const ISLANDS: [(&str, paquets::active::IslandFn); 5] = [
     ("generator", generator),
+    ("sealer", sealer),
     ("analyzer", analyzer),
     ("theme", theme),
     ("pwa", pwa),
@@ -564,6 +565,272 @@ pub fn pwa(props: &str) -> Node {
             p().class("pwa__hint")
                 .bool_attr("hidden", move || !installed.get())
                 .text(l.t("Installée sur cet appareil ✓", "Installed on this device ✓")),
+        )
+        .into()
+}
+
+// ----- Scelleur Brocolis 🥦 --------------------------------------------------------------
+
+/// Le message d'une erreur de brocolis-proto, pour un visiteur.
+pub fn seal_error(lang: Lang, e: &brocolis_proto::Erreur) -> &'static str {
+    use brocolis_proto::Erreur;
+    match e {
+        Erreur::PhraseTropCourte => lang.t(
+            "La phrase doit faire au moins 8 caractères.",
+            "The passphrase must be at least 8 characters long.",
+        ),
+        Erreur::Dechiffrement => lang.t(
+            "Phrase incorrecte, ou secret abîmé.",
+            "Wrong passphrase, or damaged secret.",
+        ),
+        Erreur::JetonAbsent | Erreur::Base64 => lang.t(
+            "Aucun secret scellé trouvé dans ce texte.",
+            "No sealed secret found in this text.",
+        ),
+        Erreur::Parametres => lang.t(
+            "Paramètres Argon2id hors des bornes acceptées.",
+            "Argon2id parameters out of the accepted bounds.",
+        ),
+        _ => lang.t(
+            "Ce texte n'a pas pu être traité.",
+            "This text could not be processed.",
+        ),
+    }
+}
+
+/// Chiffre un texte sous une phrase, au format Brocolis, dans le navigateur ; et ouvre un
+/// secret scellé. Argon2id (64 Mio, 3 passes) puis AES-256-GCM, par brocolis-proto.
+pub fn sealer(props: &str) -> Node {
+    let l = lang(props);
+    let opening = use_state(false);
+    let text = use_state(String::new());
+    let phrase = use_state(String::new());
+    let visible = use_state(false);
+    // Une phrase tirée par KeyForge : son entropie est connue (6 mots × 10 bits).
+    let generated = use_state(false);
+    let busy = use_state(false);
+    let output = use_state(String::new());
+    let error = use_state(String::new());
+    let copied = use_state(false);
+
+    let run = move || {
+        if busy.get() {
+            return;
+        }
+        error.set(String::new());
+        output.set(String::new());
+        busy.set(true);
+        #[cfg(target_arch = "wasm32")]
+        crate::client::seal_or_open(
+            l,
+            opening.get(),
+            text.get(),
+            phrase.get(),
+            output,
+            error,
+            busy,
+        );
+    };
+
+    let mode = move |open: bool, label: &'static str, ic: &'static str| {
+        button()
+            .class("gen__tab")
+            .attr("type", "button")
+            .attr("role", "tab")
+            .attr_dyn("aria-selected", move || (opening.get() == open).to_string())
+            .class_if("is-active", move || opening.get() == open)
+            .on_click(move |_| {
+                if opening.get() != open {
+                    opening.set(open);
+                    text.set(String::new());
+                    output.set(String::new());
+                    error.set(String::new());
+                }
+            })
+            .child(icon(ic))
+            .child(span().text(label))
+    };
+
+    div()
+        .class("sealer")
+        .class_if("is-busy", move || busy.get())
+        .class_if("is-opening", move || opening.get())
+        .child(
+            div()
+                .class("gen__tabs sealer__tabs")
+                .attr("role", "tablist")
+                .style_dyn("--tab", move || if opening.get() { "1".into() } else { "0".into() })
+                .child(span().class("gen__tab-ink").attr("aria-hidden", "true"))
+                .child(mode(false, l.t("Sceller", "Seal"), "lock"))
+                .child(mode(true, l.t("Ouvrir", "Open"), "key")),
+        )
+        .child(
+            label_el()
+                .class("sealer__field")
+                .child(span().class("sealer__label").text_dyn(move || {
+                    if opening.get() {
+                        l.t("Le secret scellé (les deux jetons)", "The sealed secret (both tokens)")
+                    } else {
+                        l.t("Ce que vous voulez protéger", "What you want to protect")
+                    }
+                    .into()
+                }))
+                .child(
+                    textarea()
+                        .attr("rows", "3")
+                        .attr("spellcheck", "false")
+                        .attr("autocomplete", "off")
+                        .attr_dyn("placeholder", move || {
+                            if opening.get() {
+                                "[[BROCOLIS-CLE:v2:…]]\n[[BROCOLIS:v1:…]]".into()
+                            } else {
+                                l.t(
+                                    "Un mot de passe, un code de récupération, une note…",
+                                    "A password, a recovery code, a note…",
+                                )
+                                .into()
+                            }
+                        })
+                        .attr_dyn("value", move || text.get())
+                        .on_input(move |e| text.set(e.value())),
+                ),
+        )
+        .child(
+            div()
+                .class("sealer__phrase")
+                .child(
+                    div()
+                        .class("an__field")
+                        .child(icon("words"))
+                        .child(
+                            input()
+                                .attr_dyn("type", move || {
+                                    if visible.get() { "text" } else { "password" }.into()
+                                })
+                                .attr("placeholder", l.t("Phrase secrète (8 caractères au moins)", "Passphrase (at least 8 characters)"))
+                                .attr("aria-label", l.t("Phrase secrète", "Passphrase"))
+                                .attr("autocomplete", "off")
+                                .attr("spellcheck", "false")
+                                .attr_dyn("value", move || phrase.get())
+                                .on_input(move |e| {
+                                    generated.set(false);
+                                    phrase.set(e.value());
+                                })
+                                .on("keydown", move |e| {
+                                    if e.key() == "Enter" {
+                                        e.prevent_default();
+                                        run();
+                                    }
+                                }),
+                        )
+                        .child(
+                            button()
+                                .class("icon-btn")
+                                .attr("type", "button")
+                                .attr("aria-label", l.t("Afficher la phrase", "Show the passphrase"))
+                                .on_click(move |_| visible.update(|v| *v = !*v))
+                                .child(
+                                    span()
+                                        .class("eye")
+                                        .class_if("is-open", move || visible.get())
+                                        .child(icon("eye").class("i-open"))
+                                        .child(icon("eyeoff").class("i-closed")),
+                                ),
+                        ),
+                )
+                .child(
+                    button()
+                        .class("btn btn--ghost btn--sm sealer__gen")
+                        .attr("type", "button")
+                        .bool_attr("hidden", move || opening.get())
+                        .on_click(move |_| {
+                            #[cfg(target_arch = "wasm32")]
+                            {
+                                phrase.set(crate::client::new_phrase());
+                                generated.set(true);
+                                visible.set(true);
+                            }
+                        })
+                        .child(icon("dice"))
+                        .child(span().text(l.t("Générer une phrase", "Generate a phrase"))),
+                ),
+        )
+        .child(
+            p().class("sealer__strength")
+                .bool_attr("hidden", move || opening.get() || phrase.with(String::is_empty))
+                .text_dyn(move || {
+                    if generated.get() {
+                        return l
+                            .t(
+                                "Phrase générée : 6 mots tirés parmi 1 024 · Correcte · 60 bits, renforcés par Argon2id",
+                                "Generated phrase: 6 words drawn from 1,024 · Fair · 60 bits, hardened by Argon2id",
+                            )
+                            .into();
+                    }
+                    let a = forge::analyze(&phrase.get());
+                    format!(
+                        "{} {} · {} bits",
+                        l.t("Phrase :", "Passphrase:"),
+                        level_label(l, a.level),
+                        number(l, a.bits, 0)
+                    )
+                }),
+        )
+        .child(
+            button()
+                .class("btn btn--primary btn--lg sealer__go")
+                .attr("type", "button")
+                .attr("data-magnetic", "")
+                .bool_attr("disabled", move || busy.get())
+                .on_click(move |_| run())
+                .child(span().class("sealer__spinner").attr("aria-hidden", "true"))
+                .child(span().text_dyn(move || {
+                    match (busy.get(), opening.get()) {
+                        (true, _) => l.t("Argon2id · 64 Mio · 3 passes…", "Argon2id · 64 MiB · 3 passes…"),
+                        (false, false) => l.t("Sceller avec Brocolis 🥦", "Seal with Brocolis 🥦"),
+                        (false, true) => l.t("Ouvrir avec Brocolis 🥦", "Open with Brocolis 🥦"),
+                    }
+                    .into()
+                })),
+        )
+        .child(
+            p().class("sealer__error")
+                .attr("role", "alert")
+                .bool_attr("hidden", move || error.with(String::is_empty))
+                .text_dyn(move || error.get()),
+        )
+        .child(
+            div()
+                .class("sealer__out")
+                .class_if("is-copied", move || copied.get())
+                .bool_attr("hidden", move || output.with(String::is_empty))
+                .child(
+                    p().class("sealer__label").text_dyn(move || {
+                        if opening.get() {
+                            l.t("Le secret, ouvert dans ce navigateur", "The secret, opened in this browser")
+                        } else {
+                            l.t(
+                                "Votre secret scellé : à garder où vous voulez, il ne s'ouvre qu'avec la phrase.",
+                                "Your sealed secret: keep it anywhere, it only opens with the passphrase.",
+                            )
+                        }
+                        .into()
+                    }),
+                )
+                .child(pre().class("sealer__blob").attr("aria-live", "polite").text_dyn(move || output.get()))
+                .child(
+                    button()
+                        .class("btn btn--ghost btn--sm")
+                        .attr("type", "button")
+                        .on_click(move |_| {
+                            #[cfg(target_arch = "wasm32")]
+                            crate::client::copy_text(&output.get(), copied);
+                        })
+                        .child(icon("copy"))
+                        .child(span().text_dyn(move || {
+                            if copied.get() { l.t("Copié !", "Copied!") } else { l.t("Copier", "Copy") }.into()
+                        })),
+                ),
         )
         .into()
 }
