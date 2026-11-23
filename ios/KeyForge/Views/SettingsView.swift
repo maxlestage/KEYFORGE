@@ -5,6 +5,7 @@ struct SettingsView: View {
     @Environment(VaultStore.self) private var vault
     @Environment(ToastCenter.self) private var toasts
     @State private var confirmErase = false
+    @State private var backupMode: BackupView.Mode?
 
     private var version: String {
         let info = Bundle.main.infoDictionary
@@ -64,6 +65,24 @@ struct SettingsView: View {
                 .listRowBackground(Color.surface)
 
                 Section {
+                    Button {
+                        backupMode = .exporting
+                    } label: {
+                        Label("Exporter le coffre chiffré", systemImage: "lock.doc.fill")
+                    }
+                    Button {
+                        backupMode = .importing
+                    } label: {
+                        Label("Importer une sauvegarde", systemImage: "square.and.arrow.down.on.square.fill")
+                    }
+                } header: {
+                    Text("Sauvegarde chiffrée")
+                } footer: {
+                    Text("Format Brocolis 🥦, compatible avec les apps Brocolis : votre coffre est chiffré sur cet iPhone (Argon2id, AES-256-GCM) avec une phrase que vous seul connaissez. Le fichier se garde où vous voulez.")
+                }
+                .listRowBackground(Color.surface)
+
+                Section {
                     Button(role: .destructive) {
                         confirmErase = true
                     } label: {
@@ -98,6 +117,10 @@ struct SettingsView: View {
             .scrollContentBackground(.hidden)
             .background(ForgeBackground(intensity: 0.4))
             .navigationTitle("Réglages")
+            .sheet(item: $backupMode) { mode in
+                BackupView(mode: mode)
+                    .presentationDragIndicator(.visible)
+            }
             .confirmationDialog("Effacer tout le coffre ?", isPresented: $confirmErase, titleVisibility: .visible) {
                 Button("Tout effacer", role: .destructive) {
                     Task {
