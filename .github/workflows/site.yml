@@ -42,7 +42,7 @@ jobs:
       run:
         working-directory: site
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: wasm32-unknown-unknown
@@ -63,7 +63,7 @@ jobs:
     needs: check
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: wasm32-unknown-unknown
@@ -83,7 +83,7 @@ jobs:
           curl -fsS http://localhost:3000/fr/manifest.webmanifest | grep -q '"name"'
           curl -fsS -o /dev/null http://localhost:3000/sw.js
           echo "### ✅ Le site démarre et sert ses pages, son bundle WebAssembly et sa PWA" >> "$GITHUB_STEP_SUMMARY"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with:
           name: keyforge-site
           path: |
