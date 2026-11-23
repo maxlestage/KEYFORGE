@@ -11,6 +11,7 @@ struct GeneratorView: View {
     @State private var spin = 0.0
     @State private var copied = 0
     @State private var saving: VaultItem?
+    @State private var sharing: String?
 
     var body: some View {
         NavigationStack {
@@ -40,6 +41,10 @@ struct GeneratorView: View {
                     toasts.show("Enregistré dans le coffre", symbol: "lock.shield.fill")
                     Haptics.success()
                 }
+            }
+            .sheet(isPresented: Binding(get: { sharing != nil }, set: { if !$0 { sharing = nil } })) {
+                SendEncryptedView(secret: sharing ?? "")
+                    .presentationDragIndicator(.visible)
             }
         }
     }
@@ -183,6 +188,13 @@ struct GeneratorView: View {
                 saving = VaultItem(title: "", password: model.secret.value)
             }
             .frame(maxWidth: .infinity)
+
+            RoundAction(title: "Envoyer", symbol: "paperplane.fill", tint: .forgePink) {
+                Haptics.tap()
+                sharing = model.secret.value
+            }
+            .frame(maxWidth: .infinity)
+            .accessibilityHint("Chiffre ce secret en post-quantique pour un destinataire")
         }
     }
 

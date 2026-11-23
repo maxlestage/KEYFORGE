@@ -6,6 +6,7 @@ struct KeyForgeApp: App {
     @State private var vault = VaultStore()
     @State private var generator: GeneratorModel
     @State private var toasts = ToastCenter()
+    @State private var identity = IdentityStore()
 
     init() {
         let settings = AppSettings()
@@ -20,6 +21,7 @@ struct KeyForgeApp: App {
                 .environment(vault)
                 .environment(generator)
                 .environment(toasts)
+                .environment(identity)
                 .preferredColorScheme(.dark)
                 .tint(.ember)
         }

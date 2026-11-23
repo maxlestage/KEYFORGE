@@ -42,3 +42,29 @@ enum AppleCrypto: BrocolisCrypto {
         return status == Int32(kCCSuccess) ? out : nil
     }
 }
+
+/// X25519 et Ed25519 avec CryptoKit : les courbes du protocole Brocolis v4.
+extension AppleCrypto: BrocolisCurves {
+    static func x25519Public(secret: [UInt8]) throws -> [UInt8] {
+        [UInt8](try Curve25519.KeyAgreement.PrivateKey(rawRepresentation: secret).publicKey.rawRepresentation)
+    }
+
+    static func x25519Raw(secret: [UInt8], public: [UInt8]) throws -> [UInt8] {
+        let key = try Curve25519.KeyAgreement.PrivateKey(rawRepresentation: secret)
+        let peer = try Curve25519.KeyAgreement.PublicKey(rawRepresentation: `public`)
+        return try key.sharedSecretFromKeyAgreement(with: peer).withUnsafeBytes { Array($0) }
+    }
+
+    static func ed25519Public(seed: [UInt8]) throws -> [UInt8] {
+        [UInt8](try Curve25519.Signing.PrivateKey(rawRepresentation: seed).publicKey.rawRepresentation)
+    }
+
+    static func ed25519Sign(seed: [UInt8], message: [UInt8]) throws -> [UInt8] {
+        [UInt8](try Curve25519.Signing.PrivateKey(rawRepresentation: seed).signature(for: Data(message)))
+    }
+
+    static func ed25519Verify(public: [UInt8], message: [UInt8], signature: [UInt8]) -> Bool {
+        guard let key = try? Curve25519.Signing.PublicKey(rawRepresentation: `public`) else { return false }
+        return key.isValidSignature(Data(signature), for: Data(message))
+    }
+}

@@ -238,8 +238,9 @@ struct VaultBackupPayload: Codable, Sendable {
 
 /// La sauvegarde chiffrée du coffre, au format Brocolis 🥦 : une clé aléatoire K
 /// protégée par la phrase (`[[BROCOLIS-CLE:v2:…]]`, Argon2id), puis le coffre en
-/// JSON chiffré sous K (`[[BROCOLIS:v1:…]]`). Les apps Brocolis savent lire l'une
-/// et l'autre.
+/// JSON, premier message d'une session **v4 à clé partagée** sous K
+/// (`[[BROCOLIS:v4:…]]` : en-tête chiffré, remplissage, clé ML-KEM-768 de cliquet).
+/// Les sauvegardes de l'ancien format (`[[BROCOLIS:v1:…]]`) restent lisibles.
 enum VaultBackup {
     static let fileName = "keyforge-sauvegarde.brocolis.txt"
 
@@ -247,7 +248,7 @@ enum VaultBackup {
         _ items: [VaultItem],
         phrase: String,
         params: BrocolisArgon2Params = .standard,
-        crypto: BrocolisCrypto.Type,
+        crypto: BrocolisV4Crypto.Type,
         date: Date = Date(),
         progress: ((Double) -> Void)? = nil
     ) throws -> String {
@@ -263,21 +264,29 @@ enum VaultBackup {
         encoder.dateEncodingStrategy = .iso8601
         encoder.outputFormatting = [.sortedKeys]
         let json = try encoder.encode(VaultBackupPayload(exportedAt: date, items: items))
-        let token = try Brocolis.sealTokenV1(
-            String(decoding: json, as: UTF8.self), key: key, nonce: Brocolis.randomBytes(12), crypto: crypto
-        )
+        let token = try BrocolisV4.encryptPSK(String(decoding: json, as: UTF8.self), key: key, crypto: crypto)
         return protected + "\n" + token + "\n"
     }
 
     /// Les entrées d'une sauvegarde collée ou ouverte (le texte peut contenir autre chose autour).
     static func open(
-        _ text: String, phrase: String, crypto: BrocolisCrypto.Type,
+        _ text: String, phrase: String, crypto: BrocolisV4Crypto.Type,
         progress: ((Double) -> Void)? = nil
     ) throws -> [VaultItem] {
-        guard Brocolis.inner(text, head: Brocolis.tokenV1Head) != nil else { throw BrocolisError.missingToken }
+        let isV4 = BrocolisV4.containsToken(text)
+        guard isV4 || Brocolis.inner(text, head: Brocolis.tokenV1Head) != nil else { throw BrocolisError.missingToken }
         var key = try Brocolis.unprotectKey(in: text, phrase: phrase, crypto: crypto, progress: progress)
         defer { for i in key.indices { key[i] = 0 } }
-        let json = try Brocolis.openTokenV1(in: text, key: key, crypto: crypto)
+        let json: String
+        if isV4 {
+            do {
+                json = try BrocolisV4.acceptPSK(text, key: key, crypto: crypto)
+            } catch {
+                throw BrocolisError.decryption
+            }
+        } else {
+            json = try Brocolis.openTokenV1(in: text, key: key, crypto: crypto)
+        }
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
         let data = Data(json.utf8)
@@ -293,6 +302,6 @@ enum VaultBackup {
     /// Vrai si le texte ressemble à une sauvegarde.
     static func looksLikeBackup(_ text: String) -> Bool {
         (text.contains(Brocolis.protectedKeyV2Head) || text.contains(Brocolis.protectedKeyV1Head))
-            && text.contains(Brocolis.tokenV1Head)
+            && (text.contains(Brocolis.tokenV1Head) || BrocolisV4.containsToken(text))
     }
 }

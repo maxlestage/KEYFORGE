@@ -20,7 +20,7 @@ struct OnboardingView: View {
         ),
         PageInfo(
             id: 1, symbol: "lock.shield.fill", title: "Protégez",
-            text: "Rangez vos clés dans un coffre chiffré par le trousseau iOS, ouvert par Face ID. Rien ne quitte votre iPhone.",
+            text: "Rangez vos clés dans un coffre ouvert par Face ID, et partagez-les chiffrées en post-quantique (Brocolis 🥦, X25519 + ML-KEM-768).",
             colors: [.ember, .forgePink]
         ),
         PageInfo(
