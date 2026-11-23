@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="38%" r="75%">
+      <stop offset="0" stop-color="#2a1630"/>
+      <stop offset="0.55" stop-color="#140d1d"/>
+      <stop offset="1" stop-color="#0B0A12"/>
+    </radialGradient>
+    <linearGradient id="ember" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FFB547"/>
+      <stop offset="0.35" stop-color="#FF6B2C"/>
+      <stop offset="0.7" stop-color="#FF2E7E"/>
+      <stop offset="1" stop-color="#7C5CFF"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#FF6B2C" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#FF6B2C" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="spark" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#FFF4D6"/>
+      <stop offset="0.4" stop-color="#FFB547"/>
+      <stop offset="1" stop-color="#FFB547" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1024" height="1024" fill="url(#bg)"/>
+  <circle cx="512" cy="560" r="400" fill="url(#glow)"/>
+  <!-- anvil -->
+  <path d="M250 640 H770 Q800 640 790 670 L760 700 H640 L610 760 H700 V820 H324 V760 H414 L384 700 H300 Q250 700 240 670 Z" fill="#241c33"/>
+  <path d="M250 640 H770" stroke="#3a2e4f" stroke-width="10" stroke-linecap="round"/>
+  <!-- key, rotated -->
+  <g transform="rotate(-38 512 470)">
+    <circle cx="352" cy="470" r="118" fill="none" stroke="url(#ember)" stroke-width="64"/>
+    <rect x="455" y="438" width="390" height="64" rx="32" fill="url(#ember)"/>
+    <rect x="700" y="490" width="56" height="96" rx="18" fill="url(#ember)"/>
+    <rect x="782" y="490" width="56" height="70" rx="18" fill="url(#ember)"/>
+  </g>
+  <!-- sparks -->
+  <circle cx="700" cy="250" r="70" fill="url(#spark)"/>
+  <path d="M700 190 L712 238 L760 250 L712 262 L700 310 L688 262 L640 250 L688 238 Z" fill="#FFF4D6"/>
+  <circle cx="790" cy="360" r="14" fill="#FFB547"/>
+  <circle cx="610" cy="170" r="10" fill="#FF6B2C"/>
+  <circle cx="820" cy="210" r="8" fill="#FF2E7E"/>
+  <circle cx="250" cy="300" r="9" fill="#FFB547" opacity="0.8"/>
+</svg>

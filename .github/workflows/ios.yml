@@ -1,0 +1,94 @@
+# Builds the KeyForge iOS app and runs its unit tests on an iOS simulator.
+# No signing: CODE_SIGNING_ALLOWED=NO builds for the simulator only.
+
+name: iOS
+
+on:
+  push:
+    paths:
+      - "ios/**"
+      - ".github/workflows/ios.yml"
+  pull_request:
+    paths:
+      - "ios/**"
+      - ".github/workflows/ios.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: ios-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    name: Build and test (simulator)
+    runs-on: macos-15
+    timeout-minutes: 40
+    defaults:
+      run:
+        working-directory: ios
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select the newest Xcode
+        run: |
+          xcode=$(ls -d /Applications/Xcode_*.app | sed -E 's/.*Xcode_([0-9.]+)\.app/\1 &/' \
+            | grep -vi beta | sort -t. -k1,1n -k2,2n -k3,3n | tail -1 | cut -d' ' -f2)
+          echo "Using $xcode"
+          sudo xcode-select -s "$xcode/Contents/Developer"
+          xcodebuild -version
+
+      - name: Build
+        run: |
+          set +e
+          xcodebuild -project KeyForge.xcodeproj -scheme KeyForge \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath "$RUNNER_TEMP/DerivedData" \
+            CODE_SIGNING_ALLOWED=NO build > "$RUNNER_TEMP/build.log" 2>&1
+          status=$?
+          grep -E "error:|warning: .*\.swift|BUILD (SUCCEEDED|FAILED)" "$RUNNER_TEMP/build.log"
+          [ "$status" -eq 0 ] || tail -n 80 "$RUNNER_TEMP/build.log"
+          exit $status
+
+      - name: Pick an iPhone simulator
+        id: sim
+        run: |
+          udid=$(xcrun simctl list devices available -j | python3 -c '
+          import json, sys
+          data = json.load(sys.stdin)["devices"]
+          phones = []
+          for runtime, devices in data.items():
+              if "iOS" not in runtime:
+                  continue
+              version = tuple(int(x) for x in runtime.rsplit("iOS-", 1)[-1].split("-") if x.isdigit())
+              for d in devices:
+                  if d.get("isAvailable") and d["name"].startswith("iPhone"):
+                      phones.append((version, d["name"], d["udid"]))
+          phones.sort()
+          if not phones:
+              sys.exit("no iPhone simulator available")
+          print(phones[-1][2])
+          name, version = phones[-1][1], ".".join(map(str, phones[-1][0]))
+          print(f"{name} (iOS {version})", file=sys.stderr)
+          ')
+          echo "udid=$udid" >> "$GITHUB_OUTPUT"
+
+      - name: Test
+        run: |
+          set +e
+          xcodebuild -project KeyForge.xcodeproj -scheme KeyForge \
+            -destination "id=${{ steps.sim.outputs.udid }}" \
+            -derivedDataPath "$RUNNER_TEMP/DerivedData" \
+            -resultBundlePath "$RUNNER_TEMP/KeyForge.xcresult" \
+            CODE_SIGNING_ALLOWED=NO test > "$RUNNER_TEMP/test.log" 2>&1
+          status=$?
+          grep -E "error:|Test Case .*(passed|failed)|Executed|TEST (SUCCEEDED|FAILED)" "$RUNNER_TEMP/test.log"
+          [ "$status" -eq 0 ] || tail -n 80 "$RUNNER_TEMP/test.log"
+          exit $status
+
+      - name: Upload the test results
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: KeyForge-xcresult
+          path: ${{ runner.temp }}/KeyForge.xcresult
+          if-no-files-found: ignore

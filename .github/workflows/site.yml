@@ -1,0 +1,93 @@
+# Le site (Rust, Paquets, WebAssembly) : formatage, clippy côté serveur et côté
+# navigateur, tests (chaque page dans chaque langue, PWA, plan du site), puis le build de
+# production complet (îlots WebAssembly + serveur), publié en artefact.
+#
+# Une fois vert sur master, deploy.yml déploie le site.
+
+name: Site
+
+on:
+  push:
+    paths:
+      - "site/**"
+      - "shared/**"
+      - ".github/workflows/site.yml"
+  pull_request:
+    paths:
+      - "site/**"
+      - "shared/**"
+      - ".github/workflows/site.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: site-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+  # Les dépôts de Paquets peuvent être privés : Cargo récupère alors les dépendances git
+  # avec git, qui lit le secret REPOS_TOKEN (un jeton GitHub qui peut les lire) via un
+  # helper. Sans le secret, rien ne change.
+  REPOS_TOKEN: ${{ secrets.REPOS_TOKEN }}
+  CARGO_NET_GIT_FETCH_WITH_CLI: "true"
+  GIT_CONFIG_COUNT: ${{ secrets.REPOS_TOKEN != '' && 1 || 0 }}
+  GIT_CONFIG_KEY_0: credential.https://github.com.helper
+  GIT_CONFIG_VALUE_0: '!f() { test "$1" = get && echo username=x-access-token && echo "password=$REPOS_TOKEN"; }; f'
+
+jobs:
+  check:
+    name: Vérifications et tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: site
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+          components: clippy, rustfmt
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: site
+      - run: cargo fmt --check
+      - name: Clippy (serveur)
+        run: cargo clippy --all-targets -- -D warnings
+      - name: Clippy (navigateur, wasm32)
+        run: cargo clippy --lib --target wasm32-unknown-unknown -- -D warnings
+      - name: Tests
+        run: cargo test
+
+  build:
+    name: Build de production
+    needs: check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: site
+      - name: Îlots WebAssembly et serveur
+        run: ./site/build.sh
+      - name: Le serveur démarre et répond
+        working-directory: site
+        run: |
+          PORT=3000 ./target/release/keyforge-site &
+          for _ in $(seq 1 30); do curl -fsS http://localhost:3000/health >/dev/null && break; sleep 1; done
+          curl -fsS http://localhost:3000/fr/ | grep -q "KeyForge"
+          curl -fsS http://localhost:3000/en/ | grep -q "keyforge_site.js"
+          curl -fsS -o /dev/null http://localhost:3000/pkg/keyforge_site_bg.wasm
+          curl -fsS http://localhost:3000/fr/manifest.webmanifest | grep -q '"name"'
+          curl -fsS -o /dev/null http://localhost:3000/sw.js
+          echo "### ✅ Le site démarre et sert ses pages, son bundle WebAssembly et sa PWA" >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: keyforge-site
+          path: |
+            site/target/release/keyforge-site
+            site/pkg
+            site/public
+          retention-days: 7
