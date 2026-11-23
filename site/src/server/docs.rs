@@ -302,12 +302,51 @@ fn security(l: Lang) -> Doc {
                 ))],
             ),
             sec(
+                "post-quantum",
+                t("Le post-quantique", "Post-quantum"),
+                vec![
+                    Block::P(t(
+                        "Un ordinateur quantique suffisamment puissant casserait X25519 et tous les échanges de clés classiques. Un attaquant patient peut déjà enregistrer des messages chiffrés aujourd'hui pour les lire ce jour-là (« récolter maintenant, déchiffrer plus tard »). KeyForge chiffre donc ses partages avec le protocole v4 de Brocolis 🥦, hybride : il faudrait casser à la fois X25519 et ML-KEM-768.",
+                        "A powerful enough quantum computer would break X25519 and every classic key exchange. A patient attacker can already record encrypted messages today to read them on that day (“harvest now, decrypt later”). So KeyForge encrypts its shares with the Brocolis 🥦 v4 protocol, a hybrid: one would have to break both X25519 and ML-KEM-768.",
+                    )),
+                    Block::List(vec![
+                        t(
+                            "Une identité par appareil : IK X25519 et Ed25519, une clé pré-signée X25519 et une clé ML-KEM-768 (FIPS 203), signées par l'identité. Leur paquet public se partage librement.",
+                            "One identity per device: X25519 and Ed25519 identity keys, an X25519 signed prekey and an ML-KEM-768 key (FIPS 203), signed by the identity. Their public bundle can be shared freely.",
+                        ),
+                        t(
+                            "Chiffrer pour un paquet : trois échanges X25519 et une encapsulation ML-KEM-768, mélangés par HKDF-SHA256 dans la clé de session (façon PQXDH). Un paquet sans ML-KEM est refusé : pas de repli classique.",
+                            "Encrypting to a bundle: three X25519 exchanges and one ML-KEM-768 encapsulation, mixed by HKDF-SHA256 into the session key (PQXDH-style). A bundle without ML-KEM is refused: no classic fallback.",
+                        ),
+                        t(
+                            "L'identité de l'expéditeur voyage chiffrée dans un préambule, les en-têtes aussi : un observateur ne voit ni qui écrit, ni combien de messages.",
+                            "The sender's identity travels encrypted in a preamble, and so do the headers: an observer sees neither who writes nor how many messages.",
+                        ),
+                        t(
+                            "Les échanges suivants font tourner un triple cliquet : un nouvel échange X25519 et une nouvelle encapsulation ML-KEM-768 à chaque tour.",
+                            "Later exchanges turn a triple ratchet: a new X25519 exchange and a new ML-KEM-768 encapsulation at every turn.",
+                        ),
+                        t(
+                            "Un premier message ne s'ouvre qu'une fois : la clé éphémère déjà vue est refusée (rejeu).",
+                            "A first message opens only once: an ephemeral key already seen is refused (replay).",
+                        ),
+                    ]),
+                    Block::Note(
+                        "shield",
+                        t(
+                            "Les parties symétriques (AES-256-GCM, HKDF-SHA256, Argon2id) ne craignent pas l'ordinateur quantique : l'algorithme de Grover ne fait que réduire 256 bits à 128.",
+                            "The symmetric parts (AES-256-GCM, HKDF-SHA256, Argon2id) don't fear a quantum computer: Grover's algorithm only reduces 256 bits to 128.",
+                        ),
+                    ),
+                ],
+            ),
+            sec(
                 "brocolis",
                 t("Le chiffrement Brocolis 🥦", "Brocolis encryption 🥦"),
                 vec![
                     Block::P(t(
-                        "Pour la sauvegarde chiffrée du coffre, KeyForge n'invente rien : il utilise les formats de Brocolis, un projet de chiffrement doté d'une implémentation de référence en Rust (brocolis-proto) et de vecteurs de test publics. L'app iOS les retrouve octet pour octet, et ce site se sert directement de la crate, compilée en WebAssembly.",
-                        "For the vault's encrypted backup, KeyForge invents nothing: it uses the formats of Brocolis, an encryption project with a reference implementation in Rust (brocolis-proto) and public test vectors. The iOS app matches them byte for byte, and this website uses the crate directly, compiled to WebAssembly.",
+                        "Pour ses partages et sa sauvegarde chiffrée, KeyForge n'invente rien : il utilise les formats de Brocolis, un projet de chiffrement post-quantique doté d'une implémentation de référence en Rust (brocolis-proto) et de vecteurs de test publics. L'app iOS les retrouve octet pour octet, et ce site se sert directement de la crate, compilée en WebAssembly. Pour la sauvegarde à phrase :",
+                        "For its shares and its encrypted backup, KeyForge invents nothing: it uses the formats of Brocolis, a post-quantum encryption project with a reference implementation in Rust (brocolis-proto) and public test vectors. The iOS app matches them byte for byte, and this website uses the crate directly, compiled to WebAssembly. For the passphrase backup:",
                     )),
                     Block::List(vec![
                         t(
@@ -315,8 +354,8 @@ fn security(l: Lang) -> Doc {
                             "A random 32-byte key, protected by your passphrase: Argon2id (64 MiB, 3 passes), then AES-256-GCM with the header and parameters authenticated — [[BROCOLIS-CLE:v2:…]].",
                         ),
                         t(
-                            "Le contenu chiffré en AES-256-GCM sous cette clé, avec un nonce aléatoire de 12 octets — [[BROCOLIS:v1:…]].",
-                            "The content encrypted with AES-256-GCM under that key, with a random 12-byte nonce — [[BROCOLIS:v1:…]].",
+                            "Le contenu, premier message du protocole v4 en mode clé partagée sous cette clé : en-têtes chiffrés, AES-256-GCM — [[BROCOLIS:v4:…]]. Les anciennes sauvegardes [[BROCOLIS:v1:…]] s'ouvrent toujours.",
+                            "The content, first message of the v4 protocol in shared-key mode under that key: encrypted headers, AES-256-GCM — [[BROCOLIS:v4:…]]. Older [[BROCOLIS:v1:…]] backups still open.",
                         ),
                         t(
                             "Une phrase de 8 caractères au moins ; KeyForge en propose une de six mots (60 bits).",
@@ -739,12 +778,39 @@ fn changelog(l: Lang) -> Doc {
                             "Self-clearing clipboard, blurred screen in the background.",
                         ),
                         t(
-                            "Sauvegarde chiffrée du coffre au format Brocolis 🥦 (Argon2id + AES-256-GCM).",
-                            "Encrypted vault backup in the Brocolis 🥦 format (Argon2id + AES-256-GCM).",
+                            "Partage post-quantique d'un secret (Brocolis 🥦 v4 : X25519 + ML-KEM-768) et réception, avec une identité gardée dans le Trousseau.",
+                            "Post-quantum sharing of a secret (Brocolis 🥦 v4: X25519 + ML-KEM-768) and receiving, with an identity kept in the Keychain.",
+                        ),
+                        t(
+                            "Sauvegarde chiffrée du coffre au format Brocolis 🥦 (Argon2id + message v4).",
+                            "Encrypted vault backup in the Brocolis 🥦 format (Argon2id + v4 message).",
                         ),
                         t(
                             "Découverte animée en trois écrans, thème sombre « forge ».",
                             "Animated three-screen onboarding, dark “forge” theme.",
+                        ),
+                    ],
+                ))],
+            ),
+            sec(
+                "site-0-2",
+                t("Site 0.2 · post-quantique", "Website 0.2 · post-quantum"),
+                vec![Block::View(release(
+                    "0.2.0",
+                    t("Novembre 2026", "November 2026"),
+                    t("Site", "Site"),
+                    vec![
+                        t(
+                            "Échange post-quantique dans le navigateur : identité X25519 + ML-KEM-768, chiffrer pour un paquet de clés, déchiffrer (protocole v4 de Brocolis 🥦).",
+                            "Post-quantum exchange in the browser: X25519 + ML-KEM-768 identity, encrypt to a key bundle, decrypt (Brocolis 🥦 v4 protocol).",
+                        ),
+                        t(
+                            "Le scelleur à phrase produit des messages v4 ; les anciens scellés v1 s'ouvrent toujours.",
+                            "The passphrase sealer produces v4 messages; older v1 sealed secrets still open.",
+                        ),
+                        t(
+                            "Pages sécurité, confidentialité et FAQ mises à jour pour le post-quantique ; dépendances à jour.",
+                            "Security, privacy and FAQ pages updated for post-quantum; dependencies up to date.",
                         ),
                     ],
                 ))],
@@ -770,8 +836,8 @@ fn changelog(l: Lang) -> Doc {
                             "Installable (PWA) and available offline.",
                         ),
                         t(
-                            "Scelleur de secrets chiffré par Brocolis 🥦, dans le navigateur.",
-                            "Secret sealer encrypted by Brocolis 🥦, in the browser.",
+                            "Scelleur de secrets à phrase (Argon2id + message Brocolis v4), dans le navigateur.",
+                            "Passphrase secret sealer (Argon2id + Brocolis v4 message), in the browser.",
                         ),
                         t(
                             "En français et en anglais, thème clair et sombre.",
@@ -986,8 +1052,8 @@ fn privacy(l: Lang) -> Doc {
                 "cookies",
                 t("Cookies et stockage local", "Cookies and local storage"),
                 vec![Block::P(t(
-                    "Le site ne dépose aucun cookie. Il garde seulement, dans le stockage de votre navigateur, votre choix de thème (clair ou sombre) et le fait d'avoir déjà vu l'animation d'introduction pendant la session. Le service worker met en cache les pages pour le mode hors ligne. Vous pouvez tout effacer depuis les réglages de votre navigateur.",
-                    "The website sets no cookies. It only keeps, in your browser's storage, your theme choice (light or dark) and whether you have already seen the intro animation during the session. The service worker caches pages for offline use. You can clear all of it from your browser's settings.",
+                    "Le site ne dépose aucun cookie. Il garde seulement, dans le stockage de votre navigateur, votre choix de thème (clair ou sombre), le fait d'avoir déjà vu l'animation d'introduction, et, le temps de la session de l'onglet, l'identité post-quantique que vous y créez (elle ne quitte jamais le navigateur et disparaît à sa fermeture). Le service worker met en cache les pages pour le mode hors ligne. Vous pouvez tout effacer depuis les réglages de votre navigateur.",
+                    "The website sets no cookies. It only keeps, in your browser's storage, your theme choice (light or dark), whether you have already seen the intro animation, and, for the tab's session, the post-quantum identity you create there (it never leaves the browser and disappears when the tab closes). The service worker caches pages for offline use. You can clear all of it from your browser's settings.",
                 ))],
             ),
             sec(
@@ -1134,8 +1200,8 @@ fn legal(l: Lang) -> Doc {
                         "Website built with Paquets, in Rust and WebAssembly.",
                     ),
                     t(
-                        "Chiffrement fourni par Brocolis 🥦 (brocolis-proto).",
-                        "Encryption provided by Brocolis 🥦 (brocolis-proto).",
+                        "Chiffrement post-quantique fourni par Brocolis 🥦 (brocolis-proto : X25519 + ML-KEM-768).",
+                        "Post-quantum encryption provided by Brocolis 🥦 (brocolis-proto: X25519 + ML-KEM-768).",
                     ),
                     t(
                         "Application iOS écrite en Swift et SwiftUI.",

@@ -501,7 +501,8 @@ fn site_footer(ctx: &Ctx) -> Element {
                         (ctx.home("features"), t("Fonctionnalités", "Features"), "sparkles"),
                         (ctx.home("generator"), t("Générateur en ligne", "Online generator"), "dice"),
                         (ctx.home("analyzer"), t("Testeur de robustesse", "Strength tester"), "gauge"),
-                        (ctx.home("brocolis"), t("Scelleur Brocolis 🥦", "Brocolis sealer 🥦"), "lock"),
+                        (ctx.home("quantum"), t("Échange post-quantique", "Post-quantum exchange"), "shield"),
+                        (ctx.home("brocolis"), t("Scelleur à phrase", "Passphrase sealer"), "lock"),
                         (ctx.home("screens"), t("Captures d'écran", "Screenshots"), "phone"),
                         (ctx.home("download"), t("Télécharger", "Download"), "download"),
                         (ctx.href(PageKind::Changelog), t("Nouveautés", "What's new"), "bolt"),
@@ -548,7 +549,7 @@ fn site_footer(ctx: &Ctx) -> Element {
                     ("cookie", t("Zéro cookie", "Zero cookies")),
                     ("faceid", "Face ID & Touch ID"),
                     ("lock", t("Trousseau iOS chiffré", "Encrypted iOS Keychain")),
-                    ("shield", t("Chiffré par Brocolis 🥦", "Encrypted by Brocolis 🥦")),
+                    ("shield", t("Post-quantique · Brocolis 🥦", "Post-quantum · Brocolis 🥦")),
                     ("bolt", t("Rust · WebAssembly", "Rust · WebAssembly")),
                 ]
                 .into_iter()
@@ -645,7 +646,7 @@ fn hero(ctx: &Ctx) -> Element {
                                 .href(ctx.href(PageKind::Changelog))
                                 .attr("data-reveal", "")
                                 .child(span().class("pill__tag").text(t("Nouveau", "New")))
-                                .child(span().text(t("L'app iOS arrive · v1.0", "The iOS app is coming · v1.0")))
+                                .child(span().text(t("Chiffrement post-quantique · ML-KEM-768", "Post-quantum encryption · ML-KEM-768")))
                                 .child(icon("arrow")),
                         )
                         .child(
@@ -660,8 +661,8 @@ fn hero(ctx: &Ctx) -> Element {
                                 ),
                         )
                         .child(p().class("hero__lead").attr("data-reveal", "").style("--d:3").text(t(
-                            "KeyForge génère des mots de passe, des phrases de passe et des codes PIN impossibles à deviner, les range dans le Trousseau de votre iPhone derrière Face ID, et vérifie la robustesse de ceux que vous utilisez déjà. Sans compte, sans réseau, sans publicité.",
-                            "KeyForge generates passwords, passphrases and PIN codes nobody can guess, keeps them in your iPhone's Keychain behind Face ID, and checks the strength of the ones you already use. No account, no network, no ads.",
+                            "KeyForge génère des mots de passe, des phrases de passe et des codes PIN impossibles à deviner, les range dans le Trousseau de votre iPhone derrière Face ID, et chiffre en post-quantique ce que vous partagez, avec Brocolis 🥦. Sans compte, sans serveur, sans publicité.",
+                            "KeyForge generates passwords, passphrases and PIN codes nobody can guess, keeps them in your iPhone's Keychain behind Face ID, and encrypts what you share post-quantum, with Brocolis 🥦. No account, no server, no ads.",
                         )))
                         .child(
                             div()
@@ -701,10 +702,10 @@ fn hero(ctx: &Ctx) -> Element {
                         .child(
                             ul().class("hero__pills").attr("data-reveal", "").style("--d:6").children(
                                 [
+                                    ("shield", t("Post-quantique", "Post-quantum")),
                                     ("offline", t("100 % hors ligne", "100% offline")),
                                     ("faceid", "Face ID"),
                                     ("lock", t("Trousseau iOS", "iOS Keychain")),
-                                    ("eyeoff", t("Zéro traqueur", "Zero trackers")),
                                 ]
                                 .into_iter()
                                 .map(|(ic, text)| li().child(icon(ic)).child(span().text(text))),
@@ -945,7 +946,7 @@ fn marquee(ctx: &Ctx) -> Element {
                 ("sparkles", t("Animations soignées", "Crafted animations")),
                 (
                     "shield",
-                    t("Chiffrement Brocolis 🥦", "Brocolis encryption 🥦"),
+                    t("Post-quantique · ML-KEM-768", "Post-quantum · ML-KEM-768"),
                 ),
                 ("heart", t("Sans publicité", "No ads")),
             ],
@@ -1001,11 +1002,11 @@ fn stats(ctx: &Ctx) -> Element {
                 2,
             ))
             .child(stat(
-                "5",
+                "768",
                 "",
                 t(
-                    "niveaux de robustesse, de « très faible » à « excellente »",
-                    "strength levels, from “very weak” to “excellent”",
+                    "ML-KEM-768 : le chiffrement post-quantique normalisé (FIPS 203), avec X25519",
+                    "ML-KEM-768: the standardised post-quantum encryption (FIPS 203), with X25519",
                 ),
                 3,
             )),
@@ -1034,11 +1035,11 @@ fn features(ctx: &Ctx) -> Element {
             "pink",
         ),
         (
-            "hash",
-            t("Codes PIN sans biais", "Unbiased PIN codes"),
+            "shield",
+            t("Partage post-quantique", "Post-quantum sharing"),
             t(
-                "De 4 à 12 chiffres, chacun tiré uniformément par le générateur cryptographique du système. Fini les 1234 et les dates de naissance.",
-                "4 to 12 digits, each drawn uniformly by the system's cryptographic generator. No more 1234 or birthdays.",
+                "Envoyez un secret chiffré pour un seul destinataire avec le protocole v4 de Brocolis 🥦 : X25519 + ML-KEM-768, à l'abri des ordinateurs quantiques de demain.",
+                "Send a secret encrypted for a single recipient with the Brocolis 🥦 v4 protocol: X25519 + ML-KEM-768, safe from tomorrow's quantum computers.",
             ),
             "violet",
         ),
@@ -1229,6 +1230,114 @@ fn analyzer_section(ctx: &Ctx) -> Element {
 
 pub const BROCOLIS: &str = "https://github.com/maxlestage/brocolis";
 
+fn quantum_section(ctx: &Ctx) -> Element {
+    let t = |fr, en| ctx.t(fr, en);
+    let parts = [
+        (
+            "X25519 ×3",
+            t(
+                "Diffie-Hellman classique : identité, clé pré-signée, éphémère",
+                "Classic Diffie-Hellman: identity, signed prekey, ephemeral",
+            ),
+        ),
+        (
+            "ML-KEM-768",
+            t(
+                "Encapsulation post-quantique (FIPS 203) vers la PQPK signée",
+                "Post-quantum encapsulation (FIPS 203) to the signed PQPK",
+            ),
+        ),
+        (
+            "HKDF-SHA256",
+            t(
+                "Les deux mélangés : il faudrait casser X25519 et ML-KEM",
+                "Both mixed: you'd have to break X25519 and ML-KEM",
+            ),
+        ),
+        (
+            "AES-256-GCM",
+            t(
+                "Message, en-têtes et identité de l'expéditeur chiffrés",
+                "Message, headers and sender identity encrypted",
+            ),
+        ),
+    ];
+    section()
+        .class("section section--glow quantum-section")
+        .id("quantum")
+        .child(
+            div()
+                .class("wrap")
+                .child(section_head(
+                    t("Post-quantique · Brocolis 🥦 v4", "Post-quantum · Brocolis 🥦 v4"),
+                    t("Chiffré pour aujourd'hui, et pour l'ère quantique.", "Encrypted for today, and for the quantum era."),
+                    t(
+                        "Un ordinateur quantique casserait les échanges de clés classiques, et des messages enregistrés aujourd'hui pourraient être lus demain. KeyForge chiffre donc avec le protocole v4 de Brocolis 🥦 : un échange hybride X25519 + ML-KEM-768, sûr tant que l'un des deux tient.",
+                        "A quantum computer would break classic key exchanges, and messages recorded today could be read tomorrow. So KeyForge encrypts with the Brocolis 🥦 v4 protocol: a hybrid X25519 + ML-KEM-768 exchange, safe as long as either one holds.",
+                    ),
+                ))
+                .child(
+                    div()
+                        .class("hybrid")
+                        .attr("data-reveal", "")
+                        .attr("aria-hidden", "true")
+                        .children(parts.into_iter().enumerate().flat_map(|(i, (name, body))| {
+                            let card: Node = div()
+                                .class("hybrid__part")
+                                .style(format!("--i:{i}"))
+                                .child(strong().class("grad").text(name))
+                                .child(span().text(body))
+                                .into();
+                            let arrow: Option<Node> = (i < 3).then(|| {
+                                span().class("hybrid__arrow").style(format!("--i:{i}")).child(icon("arrow")).into()
+                            });
+                            [Some(card), arrow].into_iter().flatten()
+                        })),
+                )
+                .child(
+                    div()
+                        .class("split-section quantum-split")
+                        .child(
+                            div()
+                                .class("split-section__copy")
+                                .child(eyebrow(t("Essayez à deux", "Try it with someone")))
+                                .child(split(h3, t("Donnez votre paquet, recevez des secrets.", "Hand out your bundle, receive secrets.")))
+                                .child(
+                                    ol().class("ticks qsteps").attr("data-reveal", "").children(
+                                        [
+                                            t("Votre identité post-quantique est créée dans cet onglet.", "Your post-quantum identity is created in this tab."),
+                                            t("Envoyez votre paquet de clés publiques à quelqu'un (ou écrivez-vous à vous-même).", "Send your public key bundle to someone (or write to yourself)."),
+                                            t("Il chiffre un secret pour vous : seul votre onglet peut l'ouvrir, une seule fois.", "They encrypt a secret for you: only your tab can open it, once."),
+                                        ]
+                                        .into_iter()
+                                        .map(|s| li().child(icon("check")).child(span().text(s))),
+                                    ),
+                                )
+                                .child(p().class("gen__hint").attr("data-reveal", "").text(t(
+                                    "Les jetons [[BROCOLIS:v4:…]] sont ceux des apps Brocolis 🥦 et de l'app KeyForge : brocolis-proto, compilé en WebAssembly, fait tout le travail.",
+                                    "The [[BROCOLIS:v4:…]] tokens are those of the Brocolis 🥦 apps and of the KeyForge app: brocolis-proto, compiled to WebAssembly, does all the work.",
+                                )))
+                                .child(
+                                    a().class("btn btn--ghost")
+                                        .href(BROCOLIS)
+                                        .attr("target", "_blank")
+                                        .attr("rel", "noopener")
+                                        .attr("data-magnetic", "")
+                                        .child(icon("github"))
+                                        .child(span().text(t("Le dépôt brocolis", "The brocolis repository"))),
+                                ),
+                        )
+                        .child(
+                            div()
+                                .class("panel panel--tight")
+                                .attr("data-reveal", "")
+                                .style("--d:2")
+                                .child(island("quantum", ctx.lang().code(), islands::quantum)),
+                        ),
+                ),
+        )
+}
+
 fn brocolis_section(ctx: &Ctx) -> Element {
     let t = |fr, en| ctx.t(fr, en);
     let steps = [
@@ -1250,10 +1359,10 @@ fn brocolis_section(ctx: &Ctx) -> Element {
         ),
         (
             "lock",
-            t("Un jeton scellé", "A sealed token"),
+            t("Un message v4", "A v4 message"),
             t(
-                "Le texte chiffré en AES-256-GCM sous cette clé : [[BROCOLIS:v1:…]].",
-                "The text encrypted with AES-256-GCM under that key: [[BROCOLIS:v1:…]].",
+                "Le texte, premier message du protocole v4 sous cette clé (en-têtes chiffrés, AES-256-GCM) : [[BROCOLIS:v4:…]].",
+                "The text, first message of the v4 protocol under that key (encrypted headers, AES-256-GCM): [[BROCOLIS:v4:…]].",
             ),
         ),
     ];
@@ -1266,11 +1375,11 @@ fn brocolis_section(ctx: &Ctx) -> Element {
                 .child(
                     div()
                         .class("split-section__copy")
-                        .child(eyebrow(t("Chiffrement Brocolis 🥦", "Brocolis encryption 🥦")))
-                        .child(split(h2, t("Scellez un secret, ouvrez-le n'importe où.", "Seal a secret, open it anywhere.")))
+                        .child(eyebrow(t("Scelleur à phrase · v4", "Passphrase sealer · v4")))
+                        .child(split(h2, t("Ou scellez-le sous une phrase.", "Or seal it under a passphrase.")))
                         .child(p().class("lead").attr("data-reveal", "").text(t(
-                            "KeyForge confie son chiffrement à Brocolis 🥦 : ses formats, ses vecteurs de test, sa crate Rust. Ici, dans votre navigateur, comme dans la sauvegarde chiffrée de l'app iOS, octet pour octet.",
-                            "KeyForge hands its encryption to Brocolis 🥦: its formats, its test vectors, its Rust crate. Here, in your browser, as in the iOS app's encrypted backup, byte for byte.",
+                            "Sans destinataire, une phrase suffit : Argon2id protège une clé de 256 bits, et le texte part en message v4. Tout est symétrique sur 256 bits, donc hors de portée d'un ordinateur quantique. C'est le format de la sauvegarde chiffrée de l'app iOS.",
+                            "Without a recipient, a passphrase is enough: Argon2id protects a 256-bit key, and the text goes out as a v4 message. Everything is symmetric over 256 bits, so out of a quantum computer's reach. It is the format of the iOS app's encrypted backup.",
                         )))
                         .child(div().class("chain").children(steps.into_iter().enumerate().map(|(i, (ic, title, body))| {
                             div()
@@ -1328,11 +1437,11 @@ fn security(ctx: &Ctx) -> Element {
             ),
         ),
         (
-            "dice",
-            t("Hasard cryptographique", "Cryptographic randomness"),
+            "shield",
+            t("Post-quantique", "Post-quantum"),
             t(
-                "Chaque caractère est tiré sans biais par le générateur sécurisé du système.",
-                "Each character is drawn without bias by the system's secure generator.",
+                "Partages et sauvegardes passent par le protocole v4 de Brocolis 🥦 : X25519 + ML-KEM-768.",
+                "Shares and backups go through the Brocolis 🥦 v4 protocol: X25519 + ML-KEM-768.",
             ),
         ),
     ];
@@ -1546,6 +1655,13 @@ fn compare(ctx: &Ctx) -> Element {
             ),
         ),
         (
+            t(
+                "Un chiffrement qu'un ordinateur quantique cassera",
+                "Encryption a quantum computer will break",
+            ),
+            t("Hybride X25519 + ML-KEM-768", "Hybrid X25519 + ML-KEM-768"),
+        ),
+        (
             t("Un compte de plus à créer", "Yet another account to create"),
             t("Aucune inscription, aucun serveur", "No sign-up, no server"),
         ),
@@ -1663,10 +1779,20 @@ pub fn faq_items(lang: Lang) -> Vec<(&'static str, &'static str)> {
             ),
         ),
         (
+            t(
+                "Que veut dire « post-quantique » ?",
+                "What does “post-quantum” mean?",
+            ),
+            t(
+                "Un ordinateur quantique assez puissant casserait X25519 et les autres échanges de clés classiques, et des messages enregistrés aujourd'hui pourraient alors être déchiffrés. ML-KEM-768 (FIPS 203) résiste à ces attaques. KeyForge combine les deux, comme Brocolis 🥦 : il faudrait casser X25519 et ML-KEM-768 à la fois. Les parties symétriques (AES-256, Argon2id) gardent 128 bits de sécurité face à un ordinateur quantique.",
+                "A powerful enough quantum computer would break X25519 and other classic key exchanges, and messages recorded today could then be decrypted. ML-KEM-768 (FIPS 203) resists those attacks. KeyForge combines both, like Brocolis 🥦: an attacker would have to break X25519 and ML-KEM-768 at once. The symmetric parts (AES-256, Argon2id) keep 128 bits of security against a quantum computer.",
+            ),
+        ),
+        (
             t("Qu'est-ce que Brocolis 🥦 ?", "What is Brocolis 🥦?"),
             t(
-                "Le projet de chiffrement auquel KeyForge confie ses formats : clés protégées par une phrase (Argon2id) et jetons AES-256-GCM, avec une implémentation de référence en Rust et des vecteurs de test. La sauvegarde chiffrée de l'app et le scelleur de ce site produisent exactement ses octets, lisibles par les apps Brocolis.",
-                "The encryption project KeyForge hands its formats to: passphrase-protected keys (Argon2id) and AES-256-GCM tokens, with a reference implementation in Rust and test vectors. The app's encrypted backup and this site's sealer produce exactly its bytes, readable by the Brocolis apps.",
+                "Le projet de chiffrement post-quantique auquel KeyForge confie ses formats : protocole v4 (X25519 + ML-KEM-768, triple cliquet, en-têtes chiffrés), clés protégées par Argon2id, avec une implémentation de référence en Rust et des vecteurs de test. Le site utilise directement sa crate, l'app iOS en reproduit les octets : leurs messages sont lisibles par les apps Brocolis.",
+                "The post-quantum encryption project KeyForge hands its formats to: the v4 protocol (X25519 + ML-KEM-768, triple ratchet, encrypted headers), Argon2id-protected keys, with a reference implementation in Rust and test vectors. The website uses its crate directly, the iOS app reproduces its bytes: their messages are readable by the Brocolis apps.",
             ),
         ),
         (
@@ -1768,6 +1894,7 @@ fn home(ctx: &Ctx) -> Page {
         .child(steps(ctx))
         .child(generator_section(ctx))
         .child(analyzer_section(ctx))
+        .child(quantum_section(ctx))
         .child(brocolis_section(ctx))
         .child(security(ctx))
         .child(screens(ctx))

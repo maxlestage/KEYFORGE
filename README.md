@@ -24,7 +24,7 @@ Ce dépôt contient deux choses :
 | [`site/`](site) | le site de présentation, en **Rust et WebAssembly uniquement**, écrit avec [Paquets 📦](https://github.com/maxlestage/Paquets) : pages rendues par le serveur, îlots WebAssembly, PWA installable et hors ligne |
 | [`ios/`](ios) | l'application **iOS** en Swift et SwiftUI (iOS 17+) |
 | [`shared/`](shared) | la liste de 1 024 mots des phrases de passe, commune au site et à l'app |
-| [brocolis 🥦](https://github.com/maxlestage/brocolis) | **le chiffrement** : le site utilise sa crate `brocolis-proto` (dépendance git), l'app iOS reproduit ses formats octet pour octet |
+| [brocolis 🥦](https://github.com/maxlestage/brocolis) | **le chiffrement post-quantique** (protocole v4 : X25519 + ML-KEM-768) : le site utilise sa crate `brocolis-proto` (dépendance git), l'app iOS reproduit ses formats octet pour octet |
 | [`.github/workflows/`](.github/workflows) | la CI du site, la CI iOS et le déploiement du site |
 
 ## Le site
@@ -36,12 +36,16 @@ WebAssembly. Aucune ligne de JavaScript n'est écrite à la main.
 - **Pages** : accueil, sécurité, guide des mots de passe, centre d'aide, nouveautés, kit presse,
   confidentialité, conditions, mentions légales, accessibilité et 404, **en français et en
   anglais**, thèmes **sombre et clair**.
-- **Chiffrement Brocolis 🥦** : le scelleur chiffre un texte sous une phrase, dans le
-  navigateur, avec [`brocolis-proto`](https://github.com/maxlestage/brocolis) compilé en
-  WebAssembly : une clé aléatoire protégée par Argon2id (`[[BROCOLIS-CLE:v2:…]]`, 64 Mio,
-  3 passes) et le texte en AES-256-GCM sous cette clé (`[[BROCOLIS:v1:…]]`). C'est le format
-  de la sauvegarde chiffrée de l'app iOS, lisible par les apps Brocolis ; les vecteurs de
-  brocolis sont vérifiés par les tests.
+- **Chiffrement post-quantique, par Brocolis 🥦** : [`brocolis-proto`](https://github.com/maxlestage/brocolis),
+  compilé en WebAssembly, fait tout le travail dans le navigateur.
+  - *Échange* : une identité X25519 + Ed25519 + **ML-KEM-768** (FIPS 203) par onglet, son
+    paquet de clés à partager, et le chiffrement pour le paquet de quelqu'un avec le
+    **protocole v4** (établissement hybride façon PQXDH, identité de l'expéditeur cachée,
+    en-têtes chiffrés, triple cliquet) : `[[BROCOLIS:v4:…]]`. Il faudrait casser X25519
+    **et** ML-KEM-768. Un paquet sans ML-KEM est refusé, un rejeu aussi.
+  - *Scelleur à phrase* : une clé de 256 bits protégée par Argon2id (`[[BROCOLIS-CLE:v2:…]]`)
+    et le texte en message v4 (mode clé partagée). C'est le format de la sauvegarde chiffrée
+    de l'app iOS ; les anciens scellés v1 s'ouvrent toujours.
 - **Îlots** : le générateur (le même moteur que l'app, avec `crypto.getRandomValues`), le testeur
   de robustesse, la bascule de thème (en cercle, View Transitions) et le statut PWA (en ligne /
   hors ligne, bouton « Installer »).
@@ -94,8 +98,9 @@ aussi telle quelle ailleurs : `docker build -f site/Dockerfile -t keyforge-site 
 
 SwiftUI, iOS 17+, aucune dépendance : générateur (mot de passe, phrase de passe, PIN), coffre dans
 le Trousseau derrière Face ID / Touch ID, analyse de robustesse, presse-papiers qui s'efface
-seul, découverte animée, et **sauvegarde chiffrée au format Brocolis 🥦** (Argon2id écrit en
-Swift, AES-256-GCM par CryptoKit, vérifiés contre les vecteurs de brocolis). Détails, architecture et modèle de sécurité :
+seul, découverte animée, **partage post-quantique** (protocole v4 de Brocolis 🥦 : ML-KEM-768
+écrit en Swift, X25519 par CryptoKit) et **sauvegarde chiffrée** au même format, vérifiés contre
+les vecteurs de brocolis. Détails, architecture et modèle de sécurité :
 [`ios/README.md`](ios/README.md).
 
 ```sh
