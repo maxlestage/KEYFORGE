@@ -3149,6 +3149,162 @@ input[type="range"]:active::-webkit-slider-thumb {
   color: var(--fg);
 }
 
+/* ----- Post-quantique ------------------------------------------------------------------ */
+
+.hybrid {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr auto 1fr auto 1fr;
+  gap: 12px;
+  align-items: stretch;
+  max-width: 1080px;
+  margin: 0 auto clamp(40px, 6vw, 70px);
+}
+
+.hybrid__part {
+  position: relative;
+  display: grid;
+  gap: 8px;
+  align-content: start;
+  padding: 18px;
+  border-radius: 20px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.hybrid__part strong {
+  font: 800 19px var(--mono);
+  letter-spacing: -0.02em;
+}
+
+.hybrid__part span {
+  font-size: 14px;
+  color: var(--muted);
+}
+
+/* Une onde parcourt la chaîne, carte après carte. */
+.hybrid__part::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(120deg, transparent 30%, rgba(255, 107, 44, 0.14), transparent 70%);
+  translate: -100% 0;
+  animation: hybrid-wave 4s var(--ease) calc(var(--i) * 0.5s) infinite;
+}
+
+@keyframes hybrid-wave {
+  0% { translate: -100% 0; }
+  30%, 100% { translate: 100% 0; }
+}
+
+.hybrid__part:nth-child(3) {
+  border-color: color-mix(in srgb, var(--violet) 55%, transparent);
+  box-shadow: 0 0 40px -12px rgba(124, 92, 255, 0.55);
+}
+
+.hybrid__arrow {
+  display: grid;
+  place-items: center;
+  color: var(--ember);
+}
+
+.hybrid__arrow .icon {
+  animation: nudge 1.6s var(--ease) calc(var(--i) * 0.5s) infinite;
+}
+
+.quantum-split {
+  align-items: start;
+}
+
+.quantum-split h3 {
+  font-size: clamp(26px, 3.2vw, 38px);
+}
+
+.qsteps {
+  counter-reset: q;
+}
+
+.qbadges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.qbadge {
+  padding: 5px 11px;
+  border-radius: 999px;
+  border: 1px solid var(--line-2);
+  background: var(--bg-2);
+  font: 700 12px var(--mono);
+  color: var(--fg-2);
+  animation: badge-in 0.6s var(--spring) calc(var(--i) * 90ms) both;
+}
+
+.qbadge:first-child {
+  background: var(--forge);
+  border-color: transparent;
+  color: #fff;
+  box-shadow: 0 6px 20px -6px rgba(124, 92, 255, 0.7);
+}
+
+@keyframes badge-in {
+  from { opacity: 0; translate: 0 8px; scale: 0.9; }
+}
+
+.quantum__panel {
+  display: grid;
+  gap: 14px;
+  animation: group-in 0.45s var(--ease);
+}
+
+.quantum__panel[hidden],
+.quantum [hidden] {
+  display: none;
+}
+
+.qprint {
+  display: grid;
+  gap: 6px;
+  padding: 16px;
+  border-radius: 18px;
+  background: var(--ink);
+  border: 1px solid rgba(124, 92, 255, 0.4);
+  color: #f4f1ff;
+}
+
+.qprint .sealer__label {
+  color: #c9c3dd;
+}
+
+.qprint__value {
+  font: 800 clamp(20px, 3vw, 28px) var(--mono);
+  letter-spacing: 0.06em;
+  background: var(--forge);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: gradient-pan 5s ease-in-out infinite alternate;
+  background-size: 200% 100%;
+}
+
+.qprint small {
+  color: #9089a8;
+  font-family: var(--mono);
+}
+
+.qbundle {
+  max-height: 120px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  color: var(--fg-2);
+  font-size: 11.5px;
+  mask-image: linear-gradient(#000 70%, transparent);
+}
+
 /* ----- Sécurité ------------------------------------------------------------------------- */
 
 .security {
@@ -4791,6 +4947,14 @@ input[type="range"]:active::-webkit-slider-thumb {
 
   .compare__head {
     display: none;
+  }
+
+  .hybrid {
+    grid-template-columns: 1fr;
+  }
+
+  .hybrid__arrow {
+    rotate: 90deg;
   }
 
   .compare__row {

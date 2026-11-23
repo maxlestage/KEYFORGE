@@ -32,6 +32,8 @@ async fn the_home_page_has_its_islands_and_sections() {
         r#"id="generator""#,
         r#"id="analyzer""#,
         r#"id="brocolis""#,
+        r#"id="quantum""#,
+        "ML-KEM-768",
         "Brocolis 🥦",
         r#"id="security""#,
         r#"id="screens""#,

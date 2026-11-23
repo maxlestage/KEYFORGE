@@ -4,8 +4,13 @@
 //!
 //! ```text
 //! [[BROCOLIS-CLE:v2:…]]   une clé aléatoire de 32 octets, protégée par la phrase (Argon2id)
-//! [[BROCOLIS:v1:…]]       le texte, chiffré en AES-256-GCM sous cette clé
+//! [[BROCOLIS:v4:…]]       le texte : premier message du protocole v4 en mode clé partagée
+//!                         (en-têtes chiffrés, cliquet X25519 + ML-KEM-768, AES-256-GCM)
 //! ```
+//!
+//! Tout y est symétrique sur 256 bits (Argon2id, HKDF-SHA256, AES-256-GCM) : un ordinateur
+//! quantique (Grover) ne ferait que diviser l'exposant par deux, il resterait 2¹²⁸ essais.
+//! Les anciens secrets scellés (`[[BROCOLIS:v1:…]]`) s'ouvrent toujours.
 //!
 //! C'est exactement le format de la sauvegarde chiffrée de l'app iOS, et les apps Brocolis
 //! savent lire chacun des deux jetons. Rien ici n'est de la cryptographie maison : la
@@ -13,7 +18,7 @@
 
 use brocolis_proto::cle_protegee::{self, Argon2Params};
 use brocolis_proto::hasard::{CryptoRng, bytes};
-use brocolis_proto::{Erreur, jetons};
+use brocolis_proto::{Content, Erreur, ReplayGuard, Session4, Token4, jetons};
 
 pub use cle_protegee::PHRASE_MIN;
 
@@ -35,7 +40,7 @@ pub fn seal(
     let salt: [u8; 16] = bytes(rng);
     let nonce: [u8; 12] = bytes(rng);
     let protected = cle_protegee::protect_key_v2_with(&key, phrase, params, &salt, &nonce)?;
-    let token = jetons::seal_token(text, &[key], rng).ok_or(Erreur::Format)?;
+    let token = Session4::initiate_psk(&key, rng)?.encrypt(text)?;
     Ok(format!("{protected}\n{token}"))
 }
 
@@ -46,10 +51,24 @@ fn token(blob: &str) -> Option<&str> {
     Some(&blob[start..end])
 }
 
-/// Ouvre un secret scellé (les deux jetons, n'importe où dans le texte collé).
-pub fn open(blob: &str, phrase: &str) -> Result<String, Erreur> {
+/// Ouvre un secret scellé (les deux jetons, n'importe où dans le texte collé) : v4, ou
+/// l'ancien v1.
+pub fn open(
+    blob: &str,
+    phrase: &str,
+    now: u64,
+    rng: &mut (impl CryptoRng + ?Sized),
+) -> Result<String, Erreur> {
     let token = token(blob).ok_or(Erreur::JetonAbsent)?;
     let key = cle_protegee::unprotect_key(blob, phrase)?;
+    if token.starts_with(crate::pq::HEAD_V4) {
+        let token = Token4::decode(token)?;
+        let mut guard = ReplayGuard::default();
+        return match Session4::accept_psk(&[*key], &token, &mut guard, now, rng)? {
+            (_, Content::Text(text)) => Ok(text),
+            _ => Err(Erreur::Format),
+        };
+    }
     let opened = jetons::open(token, &[*key]);
     if opened.opened == 1 {
         Ok(opened.text)
@@ -106,19 +125,42 @@ mod tests {
             &mut rng,
         )
         .unwrap();
-        assert!(blob.starts_with("[[BROCOLIS-CLE:v2:") && blob.contains("\n[[BROCOLIS:v1:"));
+        assert!(blob.starts_with("[[BROCOLIS-CLE:v2:") && blob.contains("\n[[BROCOLIS:v4:"));
         assert!(is_sealed(&blob));
         assert_eq!(params_of(&blob), Some(Argon2Params::MINIMUM));
         // Collé au milieu d'un message, il s'ouvre aussi.
         let pasted = format!("Voici ma sauvegarde :\n{blob}\nÀ garder.");
         assert_eq!(
-            open(&pasted, "une phrase de passe").unwrap(),
+            open(&pasted, "une phrase de passe", 0, &mut rng).unwrap(),
             "Galet-Phare7-Sorbet"
         );
-        assert_eq!(open(&blob, "une autre phrase"), Err(Erreur::Dechiffrement));
         assert_eq!(
-            open("rien", "une phrase de passe"),
+            open(&blob, "une autre phrase", 0, &mut rng),
+            Err(Erreur::Dechiffrement)
+        );
+        assert_eq!(
+            open("rien", "une phrase de passe", 0, &mut rng),
             Err(Erreur::JetonAbsent)
+        );
+    }
+
+    #[test]
+    fn old_v1_sealed_secrets_still_open() {
+        let mut rng = Deterministic::new(b"keyforge-v1");
+        let key: [u8; 32] = bytes(&mut rng);
+        let protected = cle_protegee::protect_key_v2_with(
+            &key,
+            "une phrase de passe",
+            Argon2Params::MINIMUM,
+            &[7; 16],
+            &[9; 12],
+        )
+        .unwrap();
+        let token = jetons::seal_token("ancien", &[key], &mut rng).unwrap();
+        let blob = format!("{protected}\n{token}");
+        assert_eq!(
+            open(&blob, "une phrase de passe", 0, &mut rng).unwrap(),
+            "ancien"
         );
     }
 

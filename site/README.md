@@ -5,8 +5,10 @@ navigateur partagent la même crate Rust.
 
 | Fichier | Rôle |
 |---|---|
+| `src/pq.rs` | le chiffrement post-quantique : identité, paquet de clés, protocole v4 de Brocolis (X25519 + ML-KEM-768) |
+| `src/seal.rs` | le scelleur à phrase : clé protégée par Argon2id + message v4 (mode clé partagée) |
 | `src/forge.rs` | le moteur du générateur et de l'analyseur, mêmes règles que l'app iOS |
-| `src/islands.rs` | les îlots : générateur, analyseur, thème, statut PWA |
+| `src/islands.rs` | les îlots : générateur, analyseur, échange post-quantique, scelleur, thème, statut PWA |
 | `src/server/pages.rs` | la mise en page (navigation, menu, footer), l'accueil et ses sections |
 | `src/server/docs.rs` | les pages de contenu et la 404 |
 | `src/server/mod.rs` | l'`App` Paquets : routes, PWA, sitemap, robots, santé |

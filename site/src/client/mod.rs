@@ -360,7 +360,7 @@ pub fn seal_or_open(
 ) {
     later(120, move || {
         let result = if opening {
-            crate::seal::open(&text, &phrase)
+            crate::seal::open(&text, &phrase, now(), &mut brocolis_proto::hasard::system())
         } else {
             crate::seal::seal(
                 &text,
@@ -372,6 +372,93 @@ pub fn seal_or_open(
         match result {
             Ok(out) => output.set(out),
             Err(e) => error.set(crate::islands::seal_error(lang, &e).to_owned()),
+        }
+        busy.set(false);
+    });
+}
+
+/// L'heure, en secondes Unix (brocolis-proto la demande à l'appelant).
+pub fn now() -> u64 {
+    (js_sys::Date::now() / 1000.0) as u64
+}
+
+// ----- Post-quantique (Brocolis v4) ------------------------------------------------------
+
+const PQ_KEY: &str = "keyforge-pq-identity";
+
+thread_local! {
+    static PQ_DEVICE: RefCell<Option<brocolis_proto::Device>> = const { RefCell::new(None) };
+}
+
+fn pq_save(device: &brocolis_proto::Device) {
+    if let Ok(Some(storage)) = window().session_storage() {
+        let _ = storage.set_item(PQ_KEY, &device.to_json());
+    }
+}
+
+/// L'identité de cet onglet : relue du stockage de session, sinon créée (ou recréée avec
+/// `fresh`). Met à jour le paquet et les empreintes affichés.
+pub fn pq_identity(
+    fresh: bool,
+    bundle: State<String>,
+    print: State<String>,
+    sender: State<String>,
+) {
+    let device = PQ_DEVICE.with(|slot| {
+        let mut slot = slot.borrow_mut();
+        if fresh || slot.is_none() {
+            let stored = (!fresh)
+                .then(|| window().session_storage().ok().flatten())
+                .flatten()
+                .and_then(|s| s.get_item(PQ_KEY).ok().flatten())
+                .and_then(|json| brocolis_proto::Device::from_json(&json).ok());
+            let device = stored.unwrap_or_else(|| {
+                crate::pq::new_identity(&mut brocolis_proto::hasard::system(), now())
+            });
+            pq_save(&device);
+            *slot = Some(device);
+        }
+        slot.clone()
+    });
+    if let Some(device) = device {
+        bundle.set(crate::pq::bundle(&device).unwrap_or_default());
+        print.set(crate::pq::identity_fingerprint(&device));
+        sender.set(crate::pq::sender_fingerprint(&device));
+    }
+}
+
+/// Chiffre pour un paquet, ou déchiffre un message reçu, après avoir laissé le navigateur
+/// afficher l'attente.
+#[allow(clippy::too_many_arguments)]
+pub fn pq_run(
+    lang: crate::i18n::Lang,
+    decrypting: bool,
+    recipient: String,
+    message: String,
+    incoming: String,
+    output: State<String>,
+    from: State<String>,
+    error: State<String>,
+    busy: State<bool>,
+) {
+    later(60, move || {
+        let mut rng = brocolis_proto::hasard::system();
+        let result = PQ_DEVICE.with(|slot| {
+            let mut slot = slot.borrow_mut();
+            let device = slot.as_mut().ok_or(brocolis_proto::Erreur::Etat)?;
+            if decrypting {
+                let got = crate::pq::decrypt(device, &incoming, now(), &mut rng)?;
+                // La mémoire des premiers messages a changé : rejeu refusé après rechargement.
+                pq_save(device);
+                from.set(got.from);
+                Ok(got.text)
+            } else {
+                crate::pq::encrypt_for(device, &recipient, &message, &mut rng)
+            }
+        });
+        match result {
+            Ok(out) => output.set(out),
+            Err(e) => error.set(crate::islands::pq_error(lang, &e).to_owned()),
         }
         busy.set(false);
     });

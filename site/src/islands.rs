@@ -15,8 +15,9 @@ fn lang(props: &str) -> Lang {
 }
 
 /// Chaque îlot, enregistré sous le nom utilisé par `island(...)`.
-pub const ISLANDS: [(&str, paquets::active::IslandFn); 5] = [
+pub const ISLANDS: [(&str, paquets::active::IslandFn); 6] = [
     ("generator", generator),
+    ("quantum", quantum),
     ("sealer", sealer),
     ("analyzer", analyzer),
     ("theme", theme),
@@ -831,6 +832,270 @@ pub fn sealer(props: &str) -> Node {
                             if copied.get() { l.t("Copié !", "Copied!") } else { l.t("Copier", "Copy") }.into()
                         })),
                 ),
+        )
+        .into()
+}
+
+// ----- Échange post-quantique (Brocolis v4) ----------------------------------------------
+
+/// Le message d'une erreur du protocole v4, pour un visiteur.
+pub fn pq_error(lang: Lang, e: &brocolis_proto::Erreur) -> &'static str {
+    use brocolis_proto::Erreur;
+    match e {
+        Erreur::PqIndisponible => lang.t(
+            "Ce paquet ne propose pas ML-KEM-768 : KeyForge refuse de chiffrer sans post-quantique.",
+            "This bundle doesn't offer ML-KEM-768: KeyForge refuses to encrypt without post-quantum.",
+        ),
+        Erreur::Signature | Erreur::CleInvalide => lang.t(
+            "Paquet de clés invalide : une signature Ed25519 ne correspond pas.",
+            "Invalid key bundle: an Ed25519 signature doesn't match.",
+        ),
+        Erreur::Base64 | Erreur::TropGrand => lang.t(
+            "Ce texte n'est pas un paquet de clés Brocolis.",
+            "This text is not a Brocolis key bundle.",
+        ),
+        Erreur::CleInconnue => lang.t(
+            "Ce message n'est pas adressé à cette identité.",
+            "This message isn't addressed to this identity.",
+        ),
+        Erreur::Rejoue => lang.t(
+            "Ce message a déjà été ouvert : un premier message ne s'ouvre qu'une fois.",
+            "This message was already opened: a first message opens only once.",
+        ),
+        Erreur::JetonAbsent => lang.t(
+            "Aucun message [[BROCOLIS:v4:…]] trouvé dans ce texte.",
+            "No [[BROCOLIS:v4:…]] message found in this text.",
+        ),
+        Erreur::Format => lang.t(
+            "Texte vide ou mal formé.",
+            "Empty or malformed text.",
+        ),
+        _ => lang.t("Ce texte n'a pas pu être traité.", "This text could not be processed."),
+    }
+}
+
+/// L'échange post-quantique : une identité X25519 + ML-KEM-768 dans le navigateur, chiffrer
+/// pour le paquet de clés de quelqu'un, déchiffrer ce qu'on reçoit. Protocole v4 de
+/// Brocolis 🥦, par brocolis-proto compilé en WebAssembly.
+pub fn quantum(props: &str) -> Node {
+    let l = lang(props);
+    // 0 : identité, 1 : chiffrer, 2 : déchiffrer.
+    let tab = use_state(0u8);
+    let bundle = use_state(String::new());
+    let print = use_state(String::new());
+    let sender_print = use_state(String::new());
+    let recipient = use_state(String::new());
+    let message = use_state(String::new());
+    let incoming = use_state(String::new());
+    let output = use_state(String::new());
+    let from = use_state(String::new());
+    let error = use_state(String::new());
+    let copied = use_state(false);
+    let busy = use_state(false);
+
+    effect(move || {
+        #[cfg(target_arch = "wasm32")]
+        crate::client::pq_identity(false, bundle, print, sender_print);
+    });
+
+    let tab_button = move |i: u8, label: &'static str, ic: &'static str| {
+        button()
+            .class("gen__tab")
+            .attr("type", "button")
+            .attr("role", "tab")
+            .attr_dyn("aria-selected", move || (tab.get() == i).to_string())
+            .class_if("is-active", move || tab.get() == i)
+            .on_click(move |_| {
+                tab.set(i);
+                output.set(String::new());
+                error.set(String::new());
+                from.set(String::new());
+            })
+            .child(icon(ic))
+            .child(span().text(label))
+    };
+
+    let copy_button = move |what: State<String>| {
+        button()
+            .class("btn btn--ghost btn--sm")
+            .attr("type", "button")
+            .on_click(move |_| {
+                #[cfg(target_arch = "wasm32")]
+                crate::client::copy_text(&what.get(), copied);
+                let _ = what;
+            })
+            .child(icon("copy"))
+            .child(span().text_dyn(move || {
+                if copied.get() {
+                    l.t("Copié !", "Copied!")
+                } else {
+                    l.t("Copier", "Copy")
+                }
+                .into()
+            }))
+    };
+
+    let area = |state: State<String>, rows: &'static str, placeholder: &'static str| {
+        textarea()
+            .attr("rows", rows)
+            .attr("spellcheck", "false")
+            .attr("autocomplete", "off")
+            .attr("placeholder", placeholder)
+            .attr_dyn("value", move || state.get())
+            .on_input(move |e| state.set(e.value()))
+    };
+
+    div()
+        .class("sealer quantum")
+        .class_if("is-busy", move || busy.get())
+        .child(
+            div()
+                .class("gen__tabs")
+                .attr("role", "tablist")
+                .style_dyn("--tab", move || tab.get().to_string())
+                .child(span().class("gen__tab-ink").attr("aria-hidden", "true"))
+                .child(tab_button(0, l.t("Mon identité", "My identity"), "fingerprint"))
+                .child(tab_button(1, l.t("Chiffrer", "Encrypt"), "lock"))
+                .child(tab_button(2, l.t("Déchiffrer", "Decrypt"), "key")),
+        )
+        .child(
+            div()
+                .class("qbadges")
+                .attr("aria-label", l.t("Algorithmes", "Algorithms"))
+                .children(["ML-KEM-768", "X25519", "Ed25519", "AES-256-GCM", "HKDF-SHA256"].into_iter().enumerate().map(
+                    |(i, name)| span().class("qbadge").style(format!("--i:{i}")).text(name),
+                )),
+        )
+        // Mon identité.
+        .child(
+            div()
+                .class("quantum__panel")
+                .bool_attr("hidden", move || tab.get() != 0)
+                .child(
+                    div()
+                        .class("qprint")
+                        .child(span().class("sealer__label").text(l.t("Empreinte de mon identité", "My identity fingerprint")))
+                        .child(strong().class("qprint__value").text_dyn(move || {
+                            let p = print.get();
+                            if p.is_empty() { "····-····-····-····".into() } else { p }
+                        }))
+                        .child(small().class("muted").text_dyn(move || {
+                            format!("{} {}", l.t("Vue par vos correspondants :", "Seen by your correspondents:"), sender_print.get())
+                        })),
+                )
+                .child(span().class("sealer__label").text(l.t(
+                    "Mon paquet de clés publiques (à donner pour recevoir des secrets)",
+                    "My public key bundle (give it out to receive secrets)",
+                )))
+                .child(pre().class("sealer__blob qbundle").text_dyn(move || bundle.get()))
+                .child(
+                    div()
+                        .class("row")
+                        .child(copy_button(bundle))
+                        .child(
+                            button()
+                                .class("btn btn--ghost btn--sm")
+                                .attr("type", "button")
+                                .on_click(move |_| {
+                                    #[cfg(target_arch = "wasm32")]
+                                    crate::client::pq_identity(true, bundle, print, sender_print);
+                                })
+                                .child(icon("refresh"))
+                                .child(span().text(l.t("Nouvelle identité", "New identity"))),
+                        ),
+                )
+                .child(p().class("gen__hint").text(l.t(
+                    "Votre identité est créée dans cet onglet et y reste (stockage de session) : les clés secrètes ne quittent jamais le navigateur. Pour une identité durable, utilisez l'app iOS.",
+                    "Your identity is created in this tab and stays there (session storage): secret keys never leave the browser. For a lasting identity, use the iOS app.",
+                ))),
+        )
+        // Chiffrer.
+        .child(
+            div()
+                .class("quantum__panel")
+                .bool_attr("hidden", move || tab.get() != 1)
+                .child(
+                    label_el()
+                        .class("sealer__field")
+                        .child(span().class("sealer__label").text(l.t("Le paquet de clés du destinataire", "The recipient's key bundle")))
+                        .child(area(recipient, "3", l.t("Collez son paquet de clés (base64)…", "Paste their key bundle (base64)…"))),
+                )
+                .child(
+                    button()
+                        .class("btn btn--ghost btn--sm")
+                        .attr("type", "button")
+                        .on_click(move |_| recipient.set(bundle.get()))
+                        .child(icon("fingerprint"))
+                        .child(span().text(l.t("M'écrire à moi-même (pour essayer)", "Write to myself (to try it)"))),
+                )
+                .child(
+                    label_el()
+                        .class("sealer__field")
+                        .child(span().class("sealer__label").text(l.t("Le secret à envoyer", "The secret to send")))
+                        .child(area(message, "2", l.t("Un mot de passe, un code, une note…", "A password, a code, a note…"))),
+                ),
+        )
+        // Déchiffrer.
+        .child(
+            div()
+                .class("quantum__panel")
+                .bool_attr("hidden", move || tab.get() != 2)
+                .child(
+                    label_el()
+                        .class("sealer__field")
+                        .child(span().class("sealer__label").text(l.t("Le message reçu", "The message you received")))
+                        .child(area(incoming, "4", "[[BROCOLIS:v4:…]]")),
+                ),
+        )
+        .child(
+            button()
+                .class("btn btn--primary btn--lg sealer__go")
+                .attr("type", "button")
+                .attr("data-magnetic", "")
+                .bool_attr("hidden", move || tab.get() == 0)
+                .bool_attr("disabled", move || busy.get())
+                .on_click(move |_| {
+                    error.set(String::new());
+                    output.set(String::new());
+                    from.set(String::new());
+                    busy.set(true);
+                    #[cfg(target_arch = "wasm32")]
+                    crate::client::pq_run(l, tab.get() == 2, recipient.get(), message.get(), incoming.get(), output, from, error, busy);
+                })
+                .child(span().class("sealer__spinner").attr("aria-hidden", "true"))
+                .child(span().text_dyn(move || {
+                    if tab.get() == 2 {
+                        l.t("Déchiffrer (ML-KEM-768 + X25519)", "Decrypt (ML-KEM-768 + X25519)")
+                    } else {
+                        l.t("Chiffrer en post-quantique", "Encrypt post-quantum")
+                    }
+                    .into()
+                })),
+        )
+        .child(
+            p().class("sealer__error")
+                .attr("role", "alert")
+                .bool_attr("hidden", move || error.with(String::is_empty))
+                .text_dyn(move || error.get()),
+        )
+        .child(
+            div()
+                .class("sealer__out")
+                .bool_attr("hidden", move || output.with(String::is_empty) || tab.get() == 0)
+                .child(p().class("sealer__label").text_dyn(move || {
+                    if tab.get() == 2 {
+                        let f = from.get();
+                        format!("{} {f}", l.t("Ouvert. Expéditeur :", "Opened. Sender:"))
+                    } else {
+                        l.t(
+                            "Chiffré pour ce seul destinataire. Envoyez-le par n'importe quel canal : seul son appareil peut l'ouvrir, une seule fois.",
+                            "Encrypted for this recipient only. Send it over any channel: only their device can open it, once.",
+                        )
+                        .into()
+                    }
+                }))
+                .child(pre().class("sealer__blob").attr("aria-live", "polite").text_dyn(move || output.get()))
+                .child(copy_button(output)),
         )
         .into()
 }

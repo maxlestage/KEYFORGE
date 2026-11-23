@@ -6,6 +6,7 @@ pub mod forge;
 pub mod i18n;
 pub mod icons;
 pub mod islands;
+pub mod pq;
 pub mod routes;
 pub mod seal;
 
