@@ -4,6 +4,7 @@
 //! dossier courant).
 
 pub mod docs;
+pub mod export;
 pub mod pages;
 
 use std::path::{Path, PathBuf};

@@ -11,7 +11,10 @@ Sans compte, sans réseau, sans publicité.
 
 [![Site](https://github.com/maxlestage/KEYFORGE/actions/workflows/site.yml/badge.svg)](https://github.com/maxlestage/KEYFORGE/actions/workflows/site.yml)
 [![iOS](https://github.com/maxlestage/KEYFORGE/actions/workflows/ios.yml/badge.svg)](https://github.com/maxlestage/KEYFORGE/actions/workflows/ios.yml)
-[![Déploiement](https://github.com/maxlestage/KEYFORGE/actions/workflows/deploy.yml/badge.svg)](https://github.com/maxlestage/KEYFORGE/actions/workflows/deploy.yml)
+[![GitHub Pages](https://github.com/maxlestage/KEYFORGE/actions/workflows/pages.yml/badge.svg)](https://maxlestage.github.io/KEYFORGE/)
+[![Heroku](https://github.com/maxlestage/KEYFORGE/actions/workflows/deploy.yml/badge.svg)](https://github.com/maxlestage/KEYFORGE/actions/workflows/deploy.yml)
+
+**[maxlestage.github.io/KEYFORGE](https://maxlestage.github.io/KEYFORGE/)**
 
 </div>
 
@@ -74,6 +77,22 @@ cargo test             # chaque page dans chaque langue, la PWA, le moteur du g�
 
 `./build.sh` sans argument construit aussi le serveur en release. Il faut Rust stable et la cible
 `wasm32-unknown-unknown` ; le script installe la bonne version de `wasm-bindgen`.
+
+### GitHub Pages (statique)
+
+[`pages.yml`](.github/workflows/pages.yml) publie le site sur
+**[maxlestage.github.io/KEYFORGE](https://maxlestage.github.io/KEYFORGE/)** après chaque CI
+verte de `master`. `keyforge-site export dist` rend tout le site en fichiers statiques depuis le
+serveur Paquets lui-même : chaque page dans chaque langue, le bundle WebAssembly, la PWA (hors
+ligne comprise), le plan du site, avec chaque adresse derrière `/KEYFORGE` (`BASE_PATH`). Le
+générateur, le testeur et le chiffrement post-quantique tournent dans le navigateur : rien ne
+manque sans serveur.
+
+```sh
+cd site && ./build.sh && BASE_PATH=/KEYFORGE ./target/release/keyforge-site export dist
+```
+
+Réglage unique : *Settings → Pages → Build and deployment → Source* : **GitHub Actions**.
 
 ### Déployer (GitHub Actions → Heroku)
 
