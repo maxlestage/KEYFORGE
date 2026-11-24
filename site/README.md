@@ -11,6 +11,7 @@ navigateur partagent la même crate Rust.
 | `src/islands.rs` | les îlots : générateur, analyseur, échange post-quantique, scelleur, thème, statut PWA |
 | `src/server/pages.rs` | la mise en page (navigation, menu, footer), l'accueil et ses sections |
 | `src/server/docs.rs` | les pages de contenu et la 404 |
+| `src/server/export.rs` | l'export statique pour GitHub Pages (`keyforge-site export dist`, `BASE_PATH`, `SITE_URL`) |
 | `src/server/mod.rs` | l'`App` Paquets : routes, PWA, sitemap, robots, santé |
 | `src/client/` | le bundle du navigateur : hydratation, hasard (`crypto.getRandomValues`), animations |
 | `src/i18n.rs`, `src/routes.rs` | les langues et les adresses (`/fr/securite/`, `/en/security/`…) |
@@ -20,4 +21,5 @@ navigateur partagent la même crate Rust.
 ```sh
 ./build.sh --wasm && cargo run   # http://localhost:3000
 ./build.sh                       # production : pkg/ + target/release/keyforge-site
+BASE_PATH=/KEYFORGE ./target/release/keyforge-site export dist   # GitHub Pages
 ```

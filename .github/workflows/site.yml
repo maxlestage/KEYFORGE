@@ -83,6 +83,16 @@ jobs:
           curl -fsS http://localhost:3000/fr/manifest.webmanifest | grep -q '"name"'
           curl -fsS -o /dev/null http://localhost:3000/sw.js
           echo "### ✅ Le site démarre et sert ses pages, son bundle WebAssembly et sa PWA" >> "$GITHUB_STEP_SUMMARY"
+      - name: Export statique (GitHub Pages)
+        working-directory: site
+        env:
+          BASE_PATH: /KEYFORGE
+          SITE_URL: https://maxlestage.github.io/KEYFORGE
+        run: |
+          ./target/release/keyforge-site export "$RUNNER_TEMP/dist"
+          grep -q '"/KEYFORGE/pkg/keyforge_site.js' "$RUNNER_TEMP/dist/fr/index.html"
+          grep -q '"start_url":"/KEYFORGE/fr/"' "$RUNNER_TEMP/dist/fr/manifest.webmanifest"
+          ! grep -o 'href="/[^K]' "$RUNNER_TEMP/dist/fr/index.html"
       - uses: actions/upload-artifact@v5
         with:
           name: keyforge-site
