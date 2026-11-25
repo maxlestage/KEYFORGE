@@ -166,7 +166,7 @@ pub fn layout(ctx: &Ctx, title: &str, description: &str, content: Element) -> Pa
         .meta_property(
             "og:image:alt",
             ctx.t(
-                "KeyForge : forgez des clés incassables.",
+                "KeyForge\u{a0}: forgez des clés incassables.",
                 "KeyForge: forge unbreakable keys.",
             ),
         )
@@ -425,7 +425,7 @@ fn site_footer(ctx: &Ctx) -> Element {
                             "Hear about new versions first.",
                         )))
                         .child(p().class("muted").text(t(
-                            "Pas de newsletter, pas d'e-mail à donner : abonnez-vous au flux des versions avec votre lecteur RSS, ou suivez le dépôt.",
+                            "Pas de newsletter, pas d'e-mail à donner\u{a0}: abonnez-vous au flux des versions avec votre lecteur RSS, ou suivez le dépôt.",
                             "No newsletter, no e-mail to give away: subscribe to the releases feed in your RSS reader, or watch the repository.",
                         ))),
                 )
@@ -461,7 +461,7 @@ fn site_footer(ctx: &Ctx) -> Element {
                                 .child(span().text("KeyForge")),
                         )
                         .child(p().class("muted").text(t(
-                            "Le générateur et coffre de mots de passe pour iPhone : des secrets impossibles à deviner, rangés derrière Face ID, sans compte ni réseau.",
+                            "Le générateur et coffre de mots de passe pour iPhone\u{a0}: des secrets impossibles à deviner, rangés derrière Face ID, sans compte ni réseau.",
                             "The password generator and vault for iPhone: secrets nobody can guess, kept behind Face ID, with no account and no network.",
                         )))
                         .child(
@@ -536,7 +536,7 @@ fn site_footer(ctx: &Ctx) -> Element {
                         (format!("{REPO}/issues/new"), t("Signaler un problème", "Report a bug"), "mail"),
                         (format!("{REPO}/security"), t("Signaler une faille", "Report a vulnerability"), "shield"),
                         (REPO.into(), t("Code source", "Source code"), "github"),
-                        (BROCOLIS.into(), t("Chiffrement : brocolis", "Encryption: brocolis"), "shield"),
+                        (BROCOLIS.into(), t("Chiffrement\u{a0}: brocolis", "Encryption: brocolis"), "shield"),
                         (format!("{REPO}/releases"), t("Versions", "Releases"), "layers"),
                     ],
                 ))
@@ -546,7 +546,7 @@ fn site_footer(ctx: &Ctx) -> Element {
                         (ctx.href(PageKind::Privacy), t("Confidentialité", "Privacy"), "eyeoff"),
                         (ctx.href(PageKind::Terms), t("Conditions d'utilisation", "Terms of use"), "file"),
                         (ctx.href(PageKind::Legal), t("Mentions légales", "Legal notice"), "scale"),
-                        (ctx.href(PageKind::Privacy) + "#cookies", t("Cookies : aucun", "Cookies: none"), "cookie"),
+                        (ctx.href(PageKind::Privacy) + "#cookies", t("Cookies\u{a0}: aucun", "Cookies: none"), "cookie"),
                         (ctx.href(PageKind::Accessibility), t("Accessibilité", "Accessibility"), "access"),
                     ],
                 )),
@@ -989,7 +989,7 @@ fn stats(ctx: &Ctx) -> Element {
                 "1024",
                 "",
                 t(
-                    "mots dans la liste des phrases de passe : 10 bits par mot",
+                    "mots dans la liste des phrases de passe\u{a0}: 10 bits par mot",
                     "words in the passphrase list: 10 bits per word",
                 ),
                 0,
@@ -1016,7 +1016,7 @@ fn stats(ctx: &Ctx) -> Element {
                 "768",
                 "",
                 t(
-                    "ML-KEM-768 : le chiffrement post-quantique normalisé (FIPS 203), avec X25519",
+                    "ML-KEM-768\u{a0}: le chiffrement post-quantique normalisé (FIPS 203), avec X25519",
                     "ML-KEM-768: the standardised post-quantum encryption (FIPS 203), with X25519",
                 ),
                 3,
@@ -1040,7 +1040,7 @@ fn features(ctx: &Ctx) -> Element {
             "words",
             t("Phrases de passe mémorables", "Memorable passphrases"),
             t(
-                "De 3 à 12 mots tirés parmi 1 024, séparateur au choix, majuscules et chiffre en option. « Galet-Phare7-Sorbet-Lynx-Opale » se retient, et résiste.",
+                "De 3 à 12 mots tirés parmi 1 024, séparateur au choix, majuscules et chiffre en option. «\u{a0}Galet-Phare7-Sorbet-Lynx-Opale\u{a0}» se retient, et résiste.",
                 "3 to 12 words drawn from 1,024, your choice of separator, optional capitals and digit. “Galet-Phare7-Sorbet-Lynx-Opale” sticks in your head, and holds.",
             ),
             "pink",
@@ -1049,7 +1049,7 @@ fn features(ctx: &Ctx) -> Element {
             "shield",
             t("Partage post-quantique", "Post-quantum sharing"),
             t(
-                "Envoyez un secret chiffré pour un seul destinataire avec le protocole v4 de Brocolis 🥦 : X25519 + ML-KEM-768, à l'abri des ordinateurs quantiques de demain.",
+                "Envoyez un secret chiffré pour un seul destinataire avec le protocole v4 de Brocolis 🥦\u{a0}: X25519 + ML-KEM-768, à l'abri des ordinateurs quantiques de demain.",
                 "Send a secret encrypted for a single recipient with the Brocolis 🥦 v4 protocol: X25519 + ML-KEM-768, safe from tomorrow's quantum computers.",
             ),
             "violet",
@@ -1076,7 +1076,7 @@ fn features(ctx: &Ctx) -> Element {
             "gauge",
             t("Analyse de robustesse", "Strength analysis"),
             t(
-                "Entropie, suites, répétitions, mots de passe les plus courants et temps de cassage estimé : sachez ce que valent vos anciens mots de passe.",
+                "Entropie, suites, répétitions, mots de passe les plus courants et temps de cassage estimé\u{a0}: sachez ce que valent vos anciens mots de passe.",
                 "Entropy, runs, repeats, the most common passwords and an estimated time to crack: know what your old passwords are worth.",
             ),
             "pink",
@@ -1149,7 +1149,7 @@ fn steps(ctx: &Ctx) -> Element {
             "vault",
             t("Rangez", "Store"),
             t(
-                "Enregistrez-le dans le coffre avec le site et l'identifiant : il ne ressortira qu'avec Face ID.",
+                "Enregistrez-le dans le coffre avec le site et l'identifiant\u{a0}: il ne ressortira qu'avec Face ID.",
                 "Save it in the vault with the site and username: it only comes out again with Face ID.",
             ),
         ),
@@ -1160,7 +1160,7 @@ fn steps(ctx: &Ctx) -> Element {
         .child(section_head(
             t("Comment ça marche", "How it works"),
             t("Trois gestes, aucun compte.", "Three moves, no account."),
-            t("Pas d'inscription, pas de mot de passe maître à inventer : votre iPhone est déjà la clé.", "No sign-up, no master password to invent: your iPhone already is the key."),
+            t("Pas d'inscription, pas de mot de passe maître à inventer\u{a0}: votre iPhone est déjà la clé.", "No sign-up, no master password to invent: your iPhone already is the key."),
         ))
         .child(
             div()
@@ -1191,7 +1191,7 @@ fn generator_section(ctx: &Ctx) -> Element {
                     t("Essayez-le ici", "Try it here"),
                     t("Le moteur de KeyForge, dans votre navigateur.", "KeyForge's engine, in your browser."),
                     t(
-                        "Les mêmes règles que l'app, écrites en Rust et compilées en WebAssembly. Le hasard vient de crypto.getRandomValues : rien ne quitte cet onglet.",
+                        "Les mêmes règles que l'app, écrites en Rust et compilées en WebAssembly. Le hasard vient de crypto.getRandomValues\u{a0}: rien ne quitte cet onglet.",
                         "The same rules as the app, written in Rust and compiled to WebAssembly. Randomness comes from crypto.getRandomValues: nothing leaves this tab.",
                     ),
                 ))
@@ -1213,9 +1213,9 @@ fn analyzer_section(ctx: &Ctx) -> Element {
             div()
                 .class("split-section__copy")
                 .child(eyebrow(t("Testeur de robustesse", "Strength tester")))
-                .child(split(h2, t("Votre mot de passe tient-il la route ?", "Does your password hold up?")))
+                .child(split(h2, t("Votre mot de passe tient-il la route\u{202f}?", "Does your password hold up?")))
                 .child(p().class("lead").attr("data-reveal", "").text(t(
-                    "Tapez-le : l'analyse se fait ici, dans votre navigateur, comme dans l'onglet « Analyse » de l'app. Suites, répétitions, mots de passe des fuites célèbres : tout ce qu'un attaquant essaie en premier.",
+                    "Tapez-le\u{a0}: l'analyse se fait ici, dans votre navigateur, comme dans l'onglet «\u{a0}Analyse\u{a0}» de l'app. Suites, répétitions, mots de passe des fuites célèbres\u{a0}: tout ce qu'un attaquant essaie en premier.",
                     "Type it: the analysis runs here, in your browser, like the app's “Analysis” tab. Runs, repeats, passwords from famous leaks: everything an attacker tries first.",
                 )))
                 .child(
@@ -1247,7 +1247,7 @@ fn quantum_section(ctx: &Ctx) -> Element {
         (
             "X25519 ×3",
             t(
-                "Diffie-Hellman classique : identité, clé pré-signée, éphémère",
+                "Diffie-Hellman classique\u{a0}: identité, clé pré-signée, éphémère",
                 "Classic Diffie-Hellman: identity, signed prekey, ephemeral",
             ),
         ),
@@ -1261,7 +1261,7 @@ fn quantum_section(ctx: &Ctx) -> Element {
         (
             "HKDF-SHA256",
             t(
-                "Les deux mélangés : il faudrait casser X25519 et ML-KEM",
+                "Les deux mélangés\u{a0}: il faudrait casser X25519 et ML-KEM",
                 "Both mixed: you'd have to break X25519 and ML-KEM",
             ),
         ),
@@ -1283,7 +1283,7 @@ fn quantum_section(ctx: &Ctx) -> Element {
                     t("Post-quantique · Brocolis 🥦 v4", "Post-quantum · Brocolis 🥦 v4"),
                     t("Chiffré pour aujourd'hui, et pour l'ère quantique.", "Encrypted for today, and for the quantum era."),
                     t(
-                        "Un ordinateur quantique casserait les échanges de clés classiques, et des messages enregistrés aujourd'hui pourraient être lus demain. KeyForge chiffre donc avec le protocole v4 de Brocolis 🥦 : un échange hybride X25519 + ML-KEM-768, sûr tant que l'un des deux tient.",
+                        "Un ordinateur quantique casserait les échanges de clés classiques, et des messages enregistrés aujourd'hui pourraient être lus demain. KeyForge chiffre donc avec le protocole v4 de Brocolis 🥦\u{a0}: un échange hybride X25519 + ML-KEM-768, sûr tant que l'un des deux tient.",
                         "A quantum computer would break classic key exchanges, and messages recorded today could be read tomorrow. So KeyForge encrypts with the Brocolis 🥦 v4 protocol: a hybrid X25519 + ML-KEM-768 exchange, safe as long as either one holds.",
                     ),
                 ))
@@ -1318,14 +1318,14 @@ fn quantum_section(ctx: &Ctx) -> Element {
                                         [
                                             t("Votre identité post-quantique est créée dans cet onglet.", "Your post-quantum identity is created in this tab."),
                                             t("Envoyez votre paquet de clés publiques à quelqu'un (ou écrivez-vous à vous-même).", "Send your public key bundle to someone (or write to yourself)."),
-                                            t("Il chiffre un secret pour vous : seul votre onglet peut l'ouvrir, une seule fois.", "They encrypt a secret for you: only your tab can open it, once."),
+                                            t("Il chiffre un secret pour vous\u{a0}: seul votre onglet peut l'ouvrir, une seule fois.", "They encrypt a secret for you: only your tab can open it, once."),
                                         ]
                                         .into_iter()
                                         .map(|s| li().child(icon("check")).child(span().text(s))),
                                     ),
                                 )
                                 .child(p().class("gen__hint").attr("data-reveal", "").text(t(
-                                    "Les jetons [[BROCOLIS:v4:…]] sont ceux des apps Brocolis 🥦 et de l'app KeyForge : brocolis-proto, compilé en WebAssembly, fait tout le travail.",
+                                    "Les jetons [[BROCOLIS:v4:…]] sont ceux des apps Brocolis 🥦 et de l'app KeyForge\u{a0}: brocolis-proto, compilé en WebAssembly, fait tout le travail.",
                                     "The [[BROCOLIS:v4:…]] tokens are those of the Brocolis 🥦 apps and of the KeyForge app: brocolis-proto, compiled to WebAssembly, does all the work.",
                                 )))
                                 .child(
@@ -1356,7 +1356,7 @@ fn brocolis_section(ctx: &Ctx) -> Element {
             "words",
             t("Une phrase", "A passphrase"),
             t(
-                "Argon2id, 64 Mio, 3 passes : chaque essai coûte cher à l'attaquant.",
+                "Argon2id, 64 Mio, 3 passes\u{a0}: chaque essai coûte cher à l'attaquant.",
                 "Argon2id, 64 MiB, 3 passes: every guess is expensive for an attacker.",
             ),
         ),
@@ -1364,7 +1364,7 @@ fn brocolis_section(ctx: &Ctx) -> Element {
             "key",
             t("Une clé neuve", "A fresh key"),
             t(
-                "32 octets tirés au hasard, protégés par la phrase : [[BROCOLIS-CLE:v2:…]].",
+                "32 octets tirés au hasard, protégés par la phrase\u{a0}: [[BROCOLIS-CLE:v2:…]].",
                 "32 random bytes, protected by the passphrase: [[BROCOLIS-CLE:v2:…]].",
             ),
         ),
@@ -1372,7 +1372,7 @@ fn brocolis_section(ctx: &Ctx) -> Element {
             "lock",
             t("Un message v4", "A v4 message"),
             t(
-                "Le texte, premier message du protocole v4 sous cette clé (en-têtes chiffrés, AES-256-GCM) : [[BROCOLIS:v4:…]].",
+                "Le texte, premier message du protocole v4 sous cette clé (en-têtes chiffrés, AES-256-GCM)\u{a0}: [[BROCOLIS:v4:…]].",
                 "The text, first message of the v4 protocol under that key (encrypted headers, AES-256-GCM): [[BROCOLIS:v4:…]].",
             ),
         ),
@@ -1389,7 +1389,7 @@ fn brocolis_section(ctx: &Ctx) -> Element {
                         .child(eyebrow(t("Scelleur à phrase · v4", "Passphrase sealer · v4")))
                         .child(split(h2, t("Ou scellez-le sous une phrase.", "Or seal it under a passphrase.")))
                         .child(p().class("lead").attr("data-reveal", "").text(t(
-                            "Sans destinataire, une phrase suffit : Argon2id protège une clé de 256 bits, et le texte part en message v4. Tout est symétrique sur 256 bits, donc hors de portée d'un ordinateur quantique. C'est le format de la sauvegarde chiffrée de l'app iOS.",
+                            "Sans destinataire, une phrase suffit\u{a0}: Argon2id protège une clé de 256 bits, et le texte part en message v4. Tout est symétrique sur 256 bits, donc hors de portée d'un ordinateur quantique. C'est le format de la sauvegarde chiffrée de l'app iOS.",
                             "Without a recipient, a passphrase is enough: Argon2id protects a 256-bit key, and the text goes out as a v4 message. Everything is symmetric over 256 bits, so out of a quantum computer's reach. It is the format of the iOS app's encrypted backup.",
                         )))
                         .child(div().class("chain").children(steps.into_iter().enumerate().map(|(i, (ic, title, body))| {
@@ -1427,7 +1427,7 @@ fn security(ctx: &Ctx) -> Element {
             "offline",
             t("Aucune connexion réseau", "No network connection"),
             t(
-                "L'app ne contient aucun code réseau : vos secrets ne peuvent pas partir.",
+                "L'app ne contient aucun code réseau\u{a0}: vos secrets ne peuvent pas partir.",
                 "The app contains no networking code: your secrets cannot leave.",
             ),
         ),
@@ -1443,7 +1443,7 @@ fn security(ctx: &Ctx) -> Element {
             "faceid",
             t("Biométrie native", "Native biometrics"),
             t(
-                "Face ID et Touch ID passent par LocalAuthentication : KeyForge ne voit jamais votre visage.",
+                "Face ID et Touch ID passent par LocalAuthentication\u{a0}: KeyForge ne voit jamais votre visage.",
                 "Face ID and Touch ID go through LocalAuthentication: KeyForge never sees your face.",
             ),
         ),
@@ -1451,7 +1451,7 @@ fn security(ctx: &Ctx) -> Element {
             "shield",
             t("Post-quantique", "Post-quantum"),
             t(
-                "Partages et sauvegardes passent par le protocole v4 de Brocolis 🥦 : X25519 + ML-KEM-768.",
+                "Partages et sauvegardes passent par le protocole v4 de Brocolis 🥦\u{a0}: X25519 + ML-KEM-768.",
                 "Shares and backups go through the Brocolis 🥦 v4 protocol: X25519 + ML-KEM-768.",
             ),
         ),
@@ -1614,7 +1614,7 @@ fn screens(ctx: &Ctx) -> Element {
         .child(div().class("wrap").child(section_head(
             t("Aperçu", "Preview"),
             t("Une app sobre, vivante, et à vous.", "A quiet, lively app that is yours."),
-            t("Thème sombre « forge », animations fluides, retours haptiques, Dynamic Type et VoiceOver.", "A dark “forge” theme, fluid animations, haptics, Dynamic Type and VoiceOver."),
+            t("Thème sombre «\u{a0}forge\u{a0}», animations fluides, retours haptiques, Dynamic Type et VoiceOver.", "A dark “forge” theme, fluid animations, haptics, Dynamic Type and VoiceOver."),
         )))
         .child(
             div()
@@ -1640,7 +1640,7 @@ fn compare(ctx: &Ctx) -> Element {
         ),
         (
             t(
-                "« Soleil2024! », deviné en secondes",
+                "«\u{a0}Soleil2024!\u{a0}», deviné en secondes",
                 "“Summer2024!”, guessed in seconds",
             ),
             t("128 bits, hors de portée", "128 bits, out of reach"),
@@ -1726,7 +1726,7 @@ pub fn faq_items(lang: Lang) -> Vec<(&'static str, &'static str)> {
     let t = |fr, en| lang.t(fr, en);
     vec![
         (
-            t("KeyForge est-il gratuit ?", "Is KeyForge free?"),
+            t("KeyForge est-il gratuit\u{202f}?", "Is KeyForge free?"),
             t(
                 "Le prix sera annoncé à la sortie sur l'App Store. Dans tous les cas, l'app ne contient ni publicité, ni traqueur, ni compte à créer.",
                 "The price will be announced at launch on the App Store. Either way, the app has no ads, no trackers and no account to create.",
@@ -1734,17 +1734,17 @@ pub fn faq_items(lang: Lang) -> Vec<(&'static str, &'static str)> {
         ),
         (
             t(
-                "Mes mots de passe sont-ils envoyés quelque part ?",
+                "Mes mots de passe sont-ils envoyés quelque part\u{202f}?",
                 "Are my passwords sent anywhere?",
             ),
             t(
-                "Non. L'app ne fait aucune requête réseau. Le coffre est stocké dans le Trousseau de votre iPhone, avec l'option « cet appareil uniquement » : il n'est pas non plus synchronisé par iCloud.",
+                "Non. L'app ne fait aucune requête réseau. Le coffre est stocké dans le Trousseau de votre iPhone, avec l'option «\u{a0}cet appareil uniquement\u{a0}»\u{a0}: il n'est pas non plus synchronisé par iCloud.",
                 "No. The app makes no network request. The vault is stored in your iPhone's Keychain with the “this device only” option: it is not synced through iCloud either.",
             ),
         ),
         (
             t(
-                "Que se passe-t-il si je perds mon iPhone ?",
+                "Que se passe-t-il si je perds mon iPhone\u{202f}?",
                 "What happens if I lose my iPhone?",
             ),
             t(
@@ -1753,25 +1753,25 @@ pub fn faq_items(lang: Lang) -> Vec<(&'static str, &'static str)> {
             ),
         ),
         (
-            t("Qu'est-ce que l'entropie ?", "What is entropy?"),
+            t("Qu'est-ce que l'entropie\u{202f}?", "What is entropy?"),
             t(
-                "C'est la mesure, en bits, du nombre d'essais qu'il faudrait pour deviner un secret : chaque bit double le travail. Au-delà de 60 bits un secret est fort, au-delà de 128 il est hors de portée de toute attaque connue.",
+                "C'est la mesure, en bits, du nombre d'essais qu'il faudrait pour deviner un secret\u{a0}: chaque bit double le travail. Au-delà de 60 bits un secret est fort, au-delà de 128 il est hors de portée de toute attaque connue.",
                 "It measures, in bits, how many guesses it would take to find a secret: every bit doubles the work. Above 60 bits a secret is strong, above 128 it is out of reach of any known attack.",
             ),
         ),
         (
             t(
-                "Mot de passe ou phrase de passe ?",
+                "Mot de passe ou phrase de passe\u{202f}?",
                 "Password or passphrase?",
             ),
             t(
-                "Un mot de passe aléatoire est le plus compact ; une phrase de passe est bien plus facile à retenir et à taper. Six mots de la liste valent 60 bits : parfait pour un mot de passe que vous devez taper de mémoire.",
+                "Un mot de passe aléatoire est le plus compact\u{202f}; une phrase de passe est bien plus facile à retenir et à taper. Six mots de la liste valent 60 bits\u{a0}: parfait pour un mot de passe que vous devez taper de mémoire.",
                 "A random password is the most compact; a passphrase is much easier to remember and type. Six words from the list are worth 60 bits: perfect for a password you must type from memory.",
             ),
         ),
         (
             t(
-                "Quels appareils sont pris en charge ?",
+                "Quels appareils sont pris en charge\u{202f}?",
                 "Which devices are supported?",
             ),
             t(
@@ -1781,35 +1781,35 @@ pub fn faq_items(lang: Lang) -> Vec<(&'static str, &'static str)> {
         ),
         (
             t(
-                "Le générateur de ce site est-il sûr ?",
+                "Le générateur de ce site est-il sûr\u{202f}?",
                 "Is this website's generator safe?",
             ),
             t(
-                "Il tourne entièrement dans votre navigateur, en WebAssembly, avec crypto.getRandomValues. Aucune valeur n'est envoyée au serveur : vous pouvez même couper le réseau avant de l'utiliser.",
+                "Il tourne entièrement dans votre navigateur, en WebAssembly, avec crypto.getRandomValues. Aucune valeur n'est envoyée au serveur\u{a0}: vous pouvez même couper le réseau avant de l'utiliser.",
                 "It runs entirely in your browser, in WebAssembly, with crypto.getRandomValues. No value is sent to the server: you can even go offline before using it.",
             ),
         ),
         (
             t(
-                "Que veut dire « post-quantique » ?",
+                "Que veut dire «\u{a0}post-quantique\u{a0}»\u{202f}?",
                 "What does “post-quantum” mean?",
             ),
             t(
-                "Un ordinateur quantique assez puissant casserait X25519 et les autres échanges de clés classiques, et des messages enregistrés aujourd'hui pourraient alors être déchiffrés. ML-KEM-768 (FIPS 203) résiste à ces attaques. KeyForge combine les deux, comme Brocolis 🥦 : il faudrait casser X25519 et ML-KEM-768 à la fois. Les parties symétriques (AES-256, Argon2id) gardent 128 bits de sécurité face à un ordinateur quantique.",
+                "Un ordinateur quantique assez puissant casserait X25519 et les autres échanges de clés classiques, et des messages enregistrés aujourd'hui pourraient alors être déchiffrés. ML-KEM-768 (FIPS 203) résiste à ces attaques. KeyForge combine les deux, comme Brocolis 🥦\u{a0}: il faudrait casser X25519 et ML-KEM-768 à la fois. Les parties symétriques (AES-256, Argon2id) gardent 128 bits de sécurité face à un ordinateur quantique.",
                 "A powerful enough quantum computer would break X25519 and other classic key exchanges, and messages recorded today could then be decrypted. ML-KEM-768 (FIPS 203) resists those attacks. KeyForge combines both, like Brocolis 🥦: an attacker would have to break X25519 and ML-KEM-768 at once. The symmetric parts (AES-256, Argon2id) keep 128 bits of security against a quantum computer.",
             ),
         ),
         (
-            t("Qu'est-ce que Brocolis 🥦 ?", "What is Brocolis 🥦?"),
+            t("Qu'est-ce que Brocolis 🥦\u{202f}?", "What is Brocolis 🥦?"),
             t(
-                "Le projet de chiffrement post-quantique auquel KeyForge confie ses formats : protocole v4 (X25519 + ML-KEM-768, triple cliquet, en-têtes chiffrés), clés protégées par Argon2id, avec une implémentation de référence en Rust et des vecteurs de test. Le site utilise directement sa crate, l'app iOS en reproduit les octets : leurs messages sont lisibles par les apps Brocolis.",
+                "Le projet de chiffrement post-quantique auquel KeyForge confie ses formats\u{a0}: protocole v4 (X25519 + ML-KEM-768, triple cliquet, en-têtes chiffrés), clés protégées par Argon2id, avec une implémentation de référence en Rust et des vecteurs de test. Le site utilise directement sa crate, l'app iOS en reproduit les octets\u{a0}: leurs messages sont lisibles par les apps Brocolis.",
                 "The post-quantum encryption project KeyForge hands its formats to: the v4 protocol (X25519 + ML-KEM-768, triple ratchet, encrypted headers), Argon2id-protected keys, with a reference implementation in Rust and test vectors. The website uses its crate directly, the iOS app reproduces its bytes: their messages are readable by the Brocolis apps.",
             ),
         ),
         (
-            t("Le code est-il public ?", "Is the code public?"),
+            t("Le code est-il public\u{202f}?", "Is the code public?"),
             t(
-                "Le site et l'application sont développés dans le dépôt GitHub du projet : vous pouvez y lire le code, suivre les versions et signaler un problème.",
+                "Le site et l'application sont développés dans le dépôt GitHub du projet\u{a0}: vous pouvez y lire le code, suivre les versions et signaler un problème.",
                 "The website and the app are developed in the project's GitHub repository: read the code, follow releases and report issues there.",
             ),
         ),
@@ -1870,9 +1870,9 @@ fn download(ctx: &Ctx) -> Element {
             div()
                 .class("wrap download__inner")
                 .child(div().class("download__logo").attr("data-reveal", "").child(logo("download")))
-                .child(split(h2, t("Prêt à forger vos clés ?", "Ready to forge your keys?")))
+                .child(split(h2, t("Prêt à forger vos clés\u{202f}?", "Ready to forge your keys?")))
                 .child(p().class("lead").attr("data-reveal", "").text(t(
-                    "KeyForge arrive sur l'App Store pour iPhone et iPad (iOS 17 ou plus récent). En attendant, installez ce site : il fonctionne hors ligne, avec le générateur et le testeur.",
+                    "KeyForge arrive sur l'App Store pour iPhone et iPad (iOS 17 ou plus récent). En attendant, installez ce site\u{a0}: il fonctionne hors ligne, avec le générateur et le testeur.",
                     "KeyForge is coming to the App Store for iPhone and iPad (iOS 17 or later). Meanwhile, install this website: it works offline, with the generator and the tester.",
                 )))
                 .child(
@@ -1889,7 +1889,7 @@ fn download(ctx: &Ctx) -> Element {
                         .child(button_link("btn btn--ghost btn--lg", REPO.into(), t("Voir le code source", "View the source"), "github")),
                 )
                 .child(p().class("download__note muted").attr("data-reveal", "").text(t(
-                    "Pour être prévenu de la sortie : abonnez-vous au flux RSS des versions, en bas de page.",
+                    "Pour être prévenu de la sortie\u{a0}: abonnez-vous au flux RSS des versions, en bas de page.",
                     "To hear about the launch: subscribe to the releases RSS feed, at the bottom of the page.",
                 ))),
         )

@@ -51,6 +51,38 @@ async fn navigation_names_are_real_text() {
     assert!(html.contains(r#"aria-controls="menu""#));
 }
 
+/// En français, une espace insécable précède « ? ! : ; » et borde les guillemets : sans
+/// elle, la ponctuation peut passer seule au début d'une ligne sur téléphone.
+#[tokio::test]
+async fn french_punctuation_never_starts_a_line() {
+    let client = app().test().await;
+    for route in Route::all().filter(|r| r.lang.code() == "fr") {
+        let html = client.get(&route.path()).await.text();
+        // Le texte seulement : hors balises, scripts et styles.
+        let mut text = String::new();
+        let mut rest = html.as_str();
+        while let Some(start) = rest.find('<') {
+            text.push_str(&rest[..start]);
+            let tag = &rest[start..];
+            let skip = ["<script", "<style"]
+                .iter()
+                .find(|t| tag.starts_with(**t))
+                .map(|t| format!("</{}>", &t[1..]));
+            rest = match skip.and_then(|end| tag.find(&end).map(|i| &tag[i..])) {
+                Some(after) => &after[after.find('>').map_or(0, |i| i + 1)..],
+                None => &tag[tag.find('>').map_or(tag.len(), |i| i + 1)..],
+            };
+        }
+        text.push_str(rest);
+        for bad in [" ?", " !", " :", " ;", " »", "« "] {
+            if let Some(i) = text.find(bad) {
+                let from = text.floor_char_boundary(i.saturating_sub(40));
+                panic!("{} : « {} »", route.path(), &text[from..i + bad.len()]);
+            }
+        }
+    }
+}
+
 #[tokio::test]
 async fn the_home_page_has_its_islands_and_sections() {
     let client = app().test().await;

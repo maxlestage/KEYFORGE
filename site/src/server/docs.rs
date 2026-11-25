@@ -204,11 +204,11 @@ fn security(l: Lang) -> Doc {
         kicker: t("Modèle de sécurité", "Security model"),
         title: t("Ce qui protège vos secrets.", "What protects your secrets."),
         lead: t(
-            "KeyForge repose sur un principe simple : ce qui ne quitte jamais votre iPhone ne peut pas fuiter. Voici, sans jargon superflu, comment l'app génère, range et protège vos clés.",
+            "KeyForge repose sur un principe simple\u{a0}: ce qui ne quitte jamais votre iPhone ne peut pas fuiter. Voici, sans jargon superflu, comment l'app génère, range et protège vos clés.",
             "KeyForge rests on a simple principle: what never leaves your iPhone cannot leak. Here is, without needless jargon, how the app generates, stores and protects your keys.",
         ),
         description: t(
-            "Le modèle de sécurité de KeyForge : génération cryptographique, Trousseau iOS, Face ID, aucune connexion réseau.",
+            "Le modèle de sécurité de KeyForge\u{a0}: génération cryptographique, Trousseau iOS, Face ID, aucune connexion réseau.",
             "KeyForge's security model: cryptographic generation, iOS Keychain, Face ID, no network connection.",
         ),
         sections: vec![
@@ -217,11 +217,11 @@ fn security(l: Lang) -> Doc {
                 t("Les principes", "Principles"),
                 vec![Block::List(vec![
                     t(
-                        "Aucun serveur : rien à pirater de notre côté, aucune base de données de vos secrets.",
+                        "Aucun serveur\u{a0}: rien à pirater de notre côté, aucune base de données de vos secrets.",
                         "No server: nothing to breach on our side, no database of your secrets.",
                     ),
                     t(
-                        "Aucun compte : pas d'adresse e-mail, pas de mot de passe maître à oublier ou à voler.",
+                        "Aucun compte\u{a0}: pas d'adresse e-mail, pas de mot de passe maître à oublier ou à voler.",
                         "No account: no e-mail address, no master password to forget or steal.",
                     ),
                     t(
@@ -239,7 +239,7 @@ fn security(l: Lang) -> Doc {
                 t("La génération", "Generation"),
                 vec![
                     Block::P(t(
-                        "Chaque caractère, mot ou chiffre est tiré par le générateur aléatoire sécurisé du système (SystemRandomNumberGenerator, adossé au générateur cryptographique d'iOS), avec un tirage uniforme : aucun caractère n'est plus probable qu'un autre.",
+                        "Chaque caractère, mot ou chiffre est tiré par le générateur aléatoire sécurisé du système (SystemRandomNumberGenerator, adossé au générateur cryptographique d'iOS), avec un tirage uniforme\u{a0}: aucun caractère n'est plus probable qu'un autre.",
                         "Every character, word or digit is drawn by the system's secure random generator (SystemRandomNumberGenerator, backed by iOS's cryptographic generator), uniformly: no character is more likely than another.",
                     )),
                     Block::P(t(
@@ -249,7 +249,7 @@ fn security(l: Lang) -> Doc {
                     Block::Note(
                         "dice",
                         t(
-                            "L'entropie affichée est celle de la méthode de génération, pas une estimation : 20 caractères parmi 86 symboles valent 128 bits.",
+                            "L'entropie affichée est celle de la méthode de génération, pas une estimation\u{a0}: 20 caractères parmi 86 symboles valent 128 bits.",
                             "The entropy shown is that of the generation method, not a guess: 20 characters out of 86 symbols are worth 128 bits.",
                         ),
                     ),
@@ -269,7 +269,7 @@ fn security(l: Lang) -> Doc {
                             "Readable only while the iPhone is unlocked.",
                         ),
                         t(
-                            "Lié à cet appareil : ni synchronisé par iCloud, ni restauré sur un autre iPhone.",
+                            "Lié à cet appareil\u{a0}: ni synchronisé par iCloud, ni restauré sur un autre iPhone.",
                             "Tied to this device: neither synced through iCloud nor restored to another iPhone.",
                         ),
                         t(
@@ -284,7 +284,7 @@ fn security(l: Lang) -> Doc {
                 t("Le déverrouillage", "Unlocking"),
                 vec![
                     Block::P(t(
-                        "Avec le verrouillage biométrique (activé par défaut), le coffre demande Face ID, Touch ID ou le code de l'appareil à chaque ouverture, via le framework LocalAuthentication d'Apple : KeyForge ne voit jamais votre visage ni votre empreinte.",
+                        "Avec le verrouillage biométrique (activé par défaut), le coffre demande Face ID, Touch ID ou le code de l'appareil à chaque ouverture, via le framework LocalAuthentication d'Apple\u{a0}: KeyForge ne voit jamais votre visage ni votre empreinte.",
                         "With the biometric lock (on by default), the vault asks for Face ID, Touch ID or the device passcode every time it opens, through Apple's LocalAuthentication framework: KeyForge never sees your face or fingerprint.",
                     )),
                     Block::P(t(
@@ -297,7 +297,7 @@ fn security(l: Lang) -> Doc {
                 "clipboard",
                 t("Le presse-papiers", "The clipboard"),
                 vec![Block::P(t(
-                    "Ce que vous copiez reçoit une date d'expiration (30 s, 1 min ou 2 min, au choix) et l'option « local uniquement » : il disparaît tout seul et n'est jamais envoyé à vos autres appareils par le presse-papiers universel.",
+                    "Ce que vous copiez reçoit une date d'expiration (30 s, 1 min ou 2 min, au choix) et l'option «\u{a0}local uniquement\u{a0}»\u{a0}: il disparaît tout seul et n'est jamais envoyé à vos autres appareils par le presse-papiers universel.",
                     "What you copy gets an expiry date (30 s, 1 min or 2 min, your choice) and the “local only” option: it disappears on its own and is never sent to your other devices through Universal Clipboard.",
                 ))],
             ),
@@ -306,35 +306,35 @@ fn security(l: Lang) -> Doc {
                 t("Le post-quantique", "Post-quantum"),
                 vec![
                     Block::P(t(
-                        "Un ordinateur quantique suffisamment puissant casserait X25519 et tous les échanges de clés classiques. Un attaquant patient peut déjà enregistrer des messages chiffrés aujourd'hui pour les lire ce jour-là (« récolter maintenant, déchiffrer plus tard »). KeyForge chiffre donc ses partages avec le protocole v4 de Brocolis 🥦, hybride : il faudrait casser à la fois X25519 et ML-KEM-768.",
+                        "Un ordinateur quantique suffisamment puissant casserait X25519 et tous les échanges de clés classiques. Un attaquant patient peut déjà enregistrer des messages chiffrés aujourd'hui pour les lire ce jour-là («\u{a0}récolter maintenant, déchiffrer plus tard\u{a0}»). KeyForge chiffre donc ses partages avec le protocole v4 de Brocolis 🥦, hybride\u{a0}: il faudrait casser à la fois X25519 et ML-KEM-768.",
                         "A powerful enough quantum computer would break X25519 and every classic key exchange. A patient attacker can already record encrypted messages today to read them on that day (“harvest now, decrypt later”). So KeyForge encrypts its shares with the Brocolis 🥦 v4 protocol, a hybrid: one would have to break both X25519 and ML-KEM-768.",
                     )),
                     Block::List(vec![
                         t(
-                            "Une identité par appareil : IK X25519 et Ed25519, une clé pré-signée X25519 et une clé ML-KEM-768 (FIPS 203), signées par l'identité. Leur paquet public se partage librement.",
+                            "Une identité par appareil\u{a0}: IK X25519 et Ed25519, une clé pré-signée X25519 et une clé ML-KEM-768 (FIPS 203), signées par l'identité. Leur paquet public se partage librement.",
                             "One identity per device: X25519 and Ed25519 identity keys, an X25519 signed prekey and an ML-KEM-768 key (FIPS 203), signed by the identity. Their public bundle can be shared freely.",
                         ),
                         t(
-                            "Chiffrer pour un paquet : trois échanges X25519 et une encapsulation ML-KEM-768, mélangés par HKDF-SHA256 dans la clé de session (façon PQXDH). Un paquet sans ML-KEM est refusé : pas de repli classique.",
+                            "Chiffrer pour un paquet\u{a0}: trois échanges X25519 et une encapsulation ML-KEM-768, mélangés par HKDF-SHA256 dans la clé de session (façon PQXDH). Un paquet sans ML-KEM est refusé\u{a0}: pas de repli classique.",
                             "Encrypting to a bundle: three X25519 exchanges and one ML-KEM-768 encapsulation, mixed by HKDF-SHA256 into the session key (PQXDH-style). A bundle without ML-KEM is refused: no classic fallback.",
                         ),
                         t(
-                            "L'identité de l'expéditeur voyage chiffrée dans un préambule, les en-têtes aussi : un observateur ne voit ni qui écrit, ni combien de messages.",
+                            "L'identité de l'expéditeur voyage chiffrée dans un préambule, les en-têtes aussi\u{a0}: un observateur ne voit ni qui écrit, ni combien de messages.",
                             "The sender's identity travels encrypted in a preamble, and so do the headers: an observer sees neither who writes nor how many messages.",
                         ),
                         t(
-                            "Les échanges suivants font tourner un triple cliquet : un nouvel échange X25519 et une nouvelle encapsulation ML-KEM-768 à chaque tour.",
+                            "Les échanges suivants font tourner un triple cliquet\u{a0}: un nouvel échange X25519 et une nouvelle encapsulation ML-KEM-768 à chaque tour.",
                             "Later exchanges turn a triple ratchet: a new X25519 exchange and a new ML-KEM-768 encapsulation at every turn.",
                         ),
                         t(
-                            "Un premier message ne s'ouvre qu'une fois : la clé éphémère déjà vue est refusée (rejeu).",
+                            "Un premier message ne s'ouvre qu'une fois\u{a0}: la clé éphémère déjà vue est refusée (rejeu).",
                             "A first message opens only once: an ephemeral key already seen is refused (replay).",
                         ),
                     ]),
                     Block::Note(
                         "shield",
                         t(
-                            "Les parties symétriques (AES-256-GCM, HKDF-SHA256, Argon2id) ne craignent pas l'ordinateur quantique : l'algorithme de Grover ne fait que réduire 256 bits à 128.",
+                            "Les parties symétriques (AES-256-GCM, HKDF-SHA256, Argon2id) ne craignent pas l'ordinateur quantique\u{a0}: l'algorithme de Grover ne fait que réduire 256 bits à 128.",
                             "The symmetric parts (AES-256-GCM, HKDF-SHA256, Argon2id) don't fear a quantum computer: Grover's algorithm only reduces 256 bits to 128.",
                         ),
                     ),
@@ -345,20 +345,20 @@ fn security(l: Lang) -> Doc {
                 t("Le chiffrement Brocolis 🥦", "Brocolis encryption 🥦"),
                 vec![
                     Block::P(t(
-                        "Pour ses partages et sa sauvegarde chiffrée, KeyForge n'invente rien : il utilise les formats de Brocolis, un projet de chiffrement post-quantique doté d'une implémentation de référence en Rust (brocolis-proto) et de vecteurs de test publics. L'app iOS les retrouve octet pour octet, et ce site se sert directement de la crate, compilée en WebAssembly. Pour la sauvegarde à phrase :",
+                        "Pour ses partages et sa sauvegarde chiffrée, KeyForge n'invente rien\u{a0}: il utilise les formats de Brocolis, un projet de chiffrement post-quantique doté d'une implémentation de référence en Rust (brocolis-proto) et de vecteurs de test publics. L'app iOS les retrouve octet pour octet, et ce site se sert directement de la crate, compilée en WebAssembly. Pour la sauvegarde à phrase\u{a0}:",
                         "For its shares and its encrypted backup, KeyForge invents nothing: it uses the formats of Brocolis, a post-quantum encryption project with a reference implementation in Rust (brocolis-proto) and public test vectors. The iOS app matches them byte for byte, and this website uses the crate directly, compiled to WebAssembly. For the passphrase backup:",
                     )),
                     Block::List(vec![
                         t(
-                            "Une clé aléatoire de 32 octets, protégée par votre phrase : Argon2id (64 Mio, 3 passes), puis AES-256-GCM avec l'en-tête et les paramètres authentifiés — [[BROCOLIS-CLE:v2:…]].",
+                            "Une clé aléatoire de 32 octets, protégée par votre phrase\u{a0}: Argon2id (64 Mio, 3 passes), puis AES-256-GCM avec l'en-tête et les paramètres authentifiés — [[BROCOLIS-CLE:v2:…]].",
                             "A random 32-byte key, protected by your passphrase: Argon2id (64 MiB, 3 passes), then AES-256-GCM with the header and parameters authenticated — [[BROCOLIS-CLE:v2:…]].",
                         ),
                         t(
-                            "Le contenu, premier message du protocole v4 en mode clé partagée sous cette clé : en-têtes chiffrés, AES-256-GCM — [[BROCOLIS:v4:…]]. Les anciennes sauvegardes [[BROCOLIS:v1:…]] s'ouvrent toujours.",
+                            "Le contenu, premier message du protocole v4 en mode clé partagée sous cette clé\u{a0}: en-têtes chiffrés, AES-256-GCM — [[BROCOLIS:v4:…]]. Les anciennes sauvegardes [[BROCOLIS:v1:…]] s'ouvrent toujours.",
                             "The content, first message of the v4 protocol in shared-key mode under that key: encrypted headers, AES-256-GCM — [[BROCOLIS:v4:…]]. Older [[BROCOLIS:v1:…]] backups still open.",
                         ),
                         t(
-                            "Une phrase de 8 caractères au moins ; KeyForge en propose une de six mots (60 bits).",
+                            "Une phrase de 8 caractères au moins\u{202f}; KeyForge en propose une de six mots (60 bits).",
                             "A passphrase of at least 8 characters; KeyForge suggests a six-word one (60 bits).",
                         ),
                         t(
@@ -383,7 +383,7 @@ fn security(l: Lang) -> Doc {
                 "network",
                 t("Le réseau", "The network"),
                 vec![Block::P(t(
-                    "L'application ne contient aucun code réseau : aucune requête, aucune analyse d'audience, aucun rapport de plantage envoyé par l'app. Son manifeste de confidentialité déclare qu'aucune donnée n'est collectée.",
+                    "L'application ne contient aucun code réseau\u{a0}: aucune requête, aucune analyse d'audience, aucun rapport de plantage envoyé par l'app. Son manifeste de confidentialité déclare qu'aucune donnée n'est collectée.",
                     "The app contains no networking code: no request, no analytics, no crash report sent by the app. Its privacy manifest declares that no data is collected.",
                 ))],
             ),
@@ -392,7 +392,7 @@ fn security(l: Lang) -> Doc {
                 t("Ce site", "This website"),
                 vec![
                     Block::P(t(
-                        "Le site est une application Paquets écrite en Rust. Le générateur et le testeur tournent dans votre navigateur, en WebAssembly : ce que vous y tapez ou générez n'est jamais envoyé.",
+                        "Le site est une application Paquets écrite en Rust. Le générateur et le testeur tournent dans votre navigateur, en WebAssembly\u{a0}: ce que vous y tapez ou générez n'est jamais envoyé.",
                         "The website is a Paquets application written in Rust. The generator and the tester run in your browser, in WebAssembly: what you type or generate there is never sent.",
                     )),
                     Block::List(vec![
@@ -415,7 +415,7 @@ fn security(l: Lang) -> Doc {
                 "limits",
                 t("Les limites", "Limits"),
                 vec![Block::P(t(
-                    "Aucune app ne protège d'un appareil déjà compromis (jailbreak, logiciel espion) ni de quelqu'un qui connaît votre code. Et comme le coffre n'est pas synchronisé, perdre l'iPhone, c'est perdre le coffre : gardez une copie de secours de vos accès essentiels.",
+                    "Aucune app ne protège d'un appareil déjà compromis (jailbreak, logiciel espion) ni de quelqu'un qui connaît votre code. Et comme le coffre n'est pas synchronisé, perdre l'iPhone, c'est perdre le coffre\u{a0}: gardez une copie de secours de vos accès essentiels.",
                     "No app protects against an already compromised device (jailbreak, spyware) or someone who knows your passcode. And since the vault is not synced, losing the iPhone means losing the vault: keep a backup of your essential logins.",
                 ))],
             ),
@@ -424,7 +424,7 @@ fn security(l: Lang) -> Doc {
                 t("Signaler une faille", "Report a vulnerability"),
                 vec![
                     Block::P(t(
-                        "Vous avez trouvé un problème de sécurité ? Merci de le signaler de façon privée via l'onglet « Security » du dépôt GitHub, plutôt que dans une issue publique.",
+                        "Vous avez trouvé un problème de sécurité\u{202f}? Merci de le signaler de façon privée via l'onglet «\u{a0}Security\u{a0}» du dépôt GitHub, plutôt que dans une issue publique.",
                         "Found a security issue? Please report it privately through the repository's GitHub “Security” tab rather than in a public issue.",
                     )),
                     Block::View(
@@ -515,7 +515,7 @@ fn guide(l: Lang) -> Doc {
             "Five minutes to understand what makes a password strong, and the few habits that really protect you.",
         ),
         description: t(
-            "Le guide KeyForge des bons mots de passe : longueur, phrases de passe, unicité, double authentification et que faire après une fuite.",
+            "Le guide KeyForge des bons mots de passe\u{a0}: longueur, phrases de passe, unicité, double authentification et que faire après une fuite.",
             "The KeyForge guide to good passwords: length, passphrases, uniqueness, two-factor authentication and what to do after a leak.",
         ),
         sections: vec![
@@ -527,7 +527,7 @@ fn guide(l: Lang) -> Doc {
                 ),
                 vec![
                     Block::P(t(
-                        "Les attaquants n'essaient pas au hasard : ils commencent par les mots de passe des fuites, les mots du dictionnaire, les prénoms, les dates et leurs variantes (« Soleil2024! »). Seul un secret vraiment aléatoire les oblige à tout essayer.",
+                        "Les attaquants n'essaient pas au hasard\u{a0}: ils commencent par les mots de passe des fuites, les mots du dictionnaire, les prénoms, les dates et leurs variantes («\u{a0}Soleil2024!\u{a0}»). Seul un secret vraiment aléatoire les oblige à tout essayer.",
                         "Attackers don't guess at random: they start with leaked passwords, dictionary words, names, dates and their variations (“Summer2024!”). Only a truly random secret forces them to try everything.",
                     )),
                     Block::P(t(
@@ -552,13 +552,13 @@ fn guide(l: Lang) -> Doc {
                 t("Les phrases de passe", "Passphrases"),
                 vec![
                     Block::P(t(
-                        "Pour ce que vous devez taper de mémoire (le code de votre ordinateur, votre identifiant Apple), une phrase de passe de 6 ou 7 mots tirés au hasard est idéale : facile à retenir, longue à deviner.",
+                        "Pour ce que vous devez taper de mémoire (le code de votre ordinateur, votre identifiant Apple), une phrase de passe de 6 ou 7 mots tirés au hasard est idéale\u{a0}: facile à retenir, longue à deviner.",
                         "For what you must type from memory (your computer password, your Apple Account), a passphrase of 6 or 7 random words is ideal: easy to remember, slow to guess.",
                     )),
                     Block::Note(
                         "words",
                         t(
-                            "Le hasard est essentiel : une phrase que vous inventez (« jaime-mon-chat ») est bien plus faible que des mots tirés par la machine.",
+                            "Le hasard est essentiel\u{a0}: une phrase que vous inventez («\u{a0}jaime-mon-chat\u{a0}») est bien plus faible que des mots tirés par la machine.",
                             "Randomness is key: a phrase you make up (“i-love-my-cat”) is much weaker than words drawn by the machine.",
                         ),
                     ),
@@ -568,7 +568,7 @@ fn guide(l: Lang) -> Doc {
                 "unique",
                 t("Un secret par compte", "One secret per account"),
                 vec![Block::P(t(
-                    "Quand un site se fait voler sa base, les mots de passe récupérés sont essayés partout ailleurs. Un mot de passe unique par compte contient les dégâts : c'est précisément ce que le coffre rend facile.",
+                    "Quand un site se fait voler sa base, les mots de passe récupérés sont essayés partout ailleurs. Un mot de passe unique par compte contient les dégâts\u{a0}: c'est précisément ce que le coffre rend facile.",
                     "When a site's database is stolen, the recovered passwords are tried everywhere else. One unique password per account contains the damage: exactly what the vault makes easy.",
                 ))],
             ),
@@ -585,19 +585,19 @@ fn guide(l: Lang) -> Doc {
                 t("Les pièges classiques", "Classic traps"),
                 vec![Block::List(vec![
                     t(
-                        "Les substitutions évidentes (« P@ssw0rd ») : les outils d'attaque les connaissent toutes.",
+                        "Les substitutions évidentes («\u{a0}P@ssw0rd\u{a0}»)\u{a0}: les outils d'attaque les connaissent toutes.",
                         "Obvious substitutions (“P@ssw0rd”): attack tools know them all.",
                     ),
                     t(
-                        "Les informations personnelles : prénoms, dates, ville, animal.",
+                        "Les informations personnelles\u{a0}: prénoms, dates, ville, animal.",
                         "Personal details: names, dates, city, pet.",
                     ),
                     t(
-                        "Les suites de clavier : « azerty », « 123456 », « qwerty ».",
+                        "Les suites de clavier\u{a0}: «\u{a0}azerty\u{a0}», «\u{a0}123456\u{a0}», «\u{a0}qwerty\u{a0}».",
                         "Keyboard runs: “azerty”, “123456”, “qwerty”.",
                     ),
                     t(
-                        "Un mot de passe « fort » réutilisé sur plusieurs sites.",
+                        "Un mot de passe «\u{a0}fort\u{a0}» réutilisé sur plusieurs sites.",
                         "A “strong” password reused on several sites.",
                     ),
                 ])],
@@ -629,13 +629,13 @@ fn help(l: Lang) -> Doc {
     Doc {
         icon: "lifebuoy",
         kicker: t("Assistance", "Support"),
-        title: t("Comment pouvons-nous aider ?", "How can we help?"),
+        title: t("Comment pouvons-nous aider\u{202f}?", "How can we help?"),
         lead: t(
             "Les premiers pas, les réponses aux questions fréquentes, les solutions aux petits soucis, et comment nous écrire.",
             "First steps, answers to common questions, fixes for small issues, and how to reach us.",
         ),
         description: t(
-            "Le centre d'aide de KeyForge : premiers pas, questions fréquentes, dépannage et contact.",
+            "Le centre d'aide de KeyForge\u{a0}: premiers pas, questions fréquentes, dépannage et contact.",
             "KeyForge's help center: first steps, frequently asked questions, troubleshooting and contact.",
         ),
         sections: vec![
@@ -644,7 +644,7 @@ fn help(l: Lang) -> Doc {
                 t("Premiers pas", "Getting started"),
                 vec![Block::List(vec![
                     t(
-                        "Ouvrez KeyForge : l'onglet Générateur forge un premier secret.",
+                        "Ouvrez KeyForge\u{a0}: l'onglet Générateur forge un premier secret.",
                         "Open KeyForge: the Generator tab forges a first secret.",
                     ),
                     t(
@@ -652,7 +652,7 @@ fn help(l: Lang) -> Doc {
                         "Choose Password, Passphrase or PIN code, and adjust the length.",
                     ),
                     t(
-                        "Touchez « Copier » pour le coller dans un site, ou « Ranger » pour l'enregistrer dans le coffre.",
+                        "Touchez «\u{a0}Copier\u{a0}» pour le coller dans un site, ou «\u{a0}Ranger\u{a0}» pour l'enregistrer dans le coffre.",
                         "Tap “Copy” to paste it into a site, or “Save” to store it in the vault.",
                     ),
                     t(
@@ -673,21 +673,21 @@ fn help(l: Lang) -> Doc {
                     Block::Note(
                         "faceid",
                         t(
-                            "Face ID ne s'affiche pas : vérifiez dans Réglages → KeyForge que l'accès à Face ID est autorisé. Sinon, le code de l'appareil reste toujours proposé.",
+                            "Face ID ne s'affiche pas\u{a0}: vérifiez dans Réglages → KeyForge que l'accès à Face ID est autorisé. Sinon, le code de l'appareil reste toujours proposé.",
                             "Face ID doesn't show: check in Settings → KeyForge that Face ID access is allowed. Otherwise, the device passcode is always offered.",
                         ),
                     ),
                     Block::Note(
                         "clipboard",
                         t(
-                            "Le mot de passe copié a disparu : c'est l'effacement automatique. Allongez le délai ou désactivez-le dans les réglages de l'app.",
+                            "Le mot de passe copié a disparu\u{a0}: c'est l'effacement automatique. Allongez le délai ou désactivez-le dans les réglages de l'app.",
                             "The copied password vanished: that's the automatic clearing. Lengthen the delay or turn it off in the app's settings.",
                         ),
                     ),
                     Block::Note(
                         "vault",
                         t(
-                            "Le coffre est vide sur un nouvel iPhone : il est lié à l'appareil et n'est ni synchronisé ni restauré ailleurs, par conception. Restaurez-le depuis une sauvegarde chiffrée Brocolis 🥦 (Réglages → Sauvegarde chiffrée).",
+                            "Le coffre est vide sur un nouvel iPhone\u{a0}: il est lié à l'appareil et n'est ni synchronisé ni restauré ailleurs, par conception. Restaurez-le depuis une sauvegarde chiffrée Brocolis 🥦 (Réglages → Sauvegarde chiffrée).",
                             "The vault is empty on a new iPhone: it is tied to the device and neither synced nor restored elsewhere, by design. Restore it from a Brocolis 🥦 encrypted backup (Settings → Encrypted backup).",
                         ),
                     ),
@@ -698,7 +698,7 @@ fn help(l: Lang) -> Doc {
                 t("Nous écrire", "Contact us"),
                 vec![
                     Block::P(t(
-                        "Une question, une idée, un bug ? Ouvrez une issue sur le dépôt GitHub : c'est le moyen le plus rapide d'obtenir une réponse, et la réponse profite à tout le monde.",
+                        "Une question, une idée, un bug\u{202f}? Ouvrez une issue sur le dépôt GitHub\u{a0}: c'est le moyen le plus rapide d'obtenir une réponse, et la réponse profite à tout le monde.",
                         "A question, an idea, a bug? Open an issue on the GitHub repository: it's the fastest way to get an answer, and the answer helps everyone.",
                     )),
                     Block::View(
@@ -749,7 +749,7 @@ fn changelog(l: Lang) -> Doc {
             "The history of the iOS app and of this website. To hear about the next versions, subscribe to the repository's RSS feed.",
         ),
         description: t(
-            "Les nouveautés de KeyForge : l'historique des versions de l'application iOS et du site.",
+            "Les nouveautés de KeyForge\u{a0}: l'historique des versions de l'application iOS et du site.",
             "What's new in KeyForge: the version history of the iOS app and the website.",
         ),
         sections: vec![
@@ -778,7 +778,7 @@ fn changelog(l: Lang) -> Doc {
                             "Self-clearing clipboard, blurred screen in the background.",
                         ),
                         t(
-                            "Partage post-quantique d'un secret (Brocolis 🥦 v4 : X25519 + ML-KEM-768) et réception, avec une identité gardée dans le Trousseau.",
+                            "Partage post-quantique d'un secret (Brocolis 🥦 v4\u{a0}: X25519 + ML-KEM-768) et réception, avec une identité gardée dans le Trousseau.",
                             "Post-quantum sharing of a secret (Brocolis 🥦 v4: X25519 + ML-KEM-768) and receiving, with an identity kept in the Keychain.",
                         ),
                         t(
@@ -786,7 +786,7 @@ fn changelog(l: Lang) -> Doc {
                             "Encrypted vault backup in the Brocolis 🥦 format (Argon2id + v4 message).",
                         ),
                         t(
-                            "Découverte animée en trois écrans, thème sombre « forge ».",
+                            "Découverte animée en trois écrans, thème sombre «\u{a0}forge\u{a0}».",
                             "Animated three-screen onboarding, dark “forge” theme.",
                         ),
                     ],
@@ -801,15 +801,15 @@ fn changelog(l: Lang) -> Doc {
                     t("Site", "Site"),
                     vec![
                         t(
-                            "Échange post-quantique dans le navigateur : identité X25519 + ML-KEM-768, chiffrer pour un paquet de clés, déchiffrer (protocole v4 de Brocolis 🥦).",
+                            "Échange post-quantique dans le navigateur\u{a0}: identité X25519 + ML-KEM-768, chiffrer pour un paquet de clés, déchiffrer (protocole v4 de Brocolis 🥦).",
                             "Post-quantum exchange in the browser: X25519 + ML-KEM-768 identity, encrypt to a key bundle, decrypt (Brocolis 🥦 v4 protocol).",
                         ),
                         t(
-                            "Le scelleur à phrase produit des messages v4 ; les anciens scellés v1 s'ouvrent toujours.",
+                            "Le scelleur à phrase produit des messages v4\u{202f}; les anciens scellés v1 s'ouvrent toujours.",
                             "The passphrase sealer produces v4 messages; older v1 sealed secrets still open.",
                         ),
                         t(
-                            "Pages sécurité, confidentialité et FAQ mises à jour pour le post-quantique ; dépendances à jour.",
+                            "Pages sécurité, confidentialité et FAQ mises à jour pour le post-quantique\u{202f}; dépendances à jour.",
                             "Security, privacy and FAQ pages updated for post-quantum; dependencies up to date.",
                         ),
                     ],
@@ -824,7 +824,7 @@ fn changelog(l: Lang) -> Doc {
                     t("Site", "Site"),
                     vec![
                         t(
-                            "Site écrit avec Paquets : pages rendues par le serveur, îlots WebAssembly.",
+                            "Site écrit avec Paquets\u{a0}: pages rendues par le serveur, îlots WebAssembly.",
                             "Website built with Paquets: server-rendered pages, WebAssembly islands.",
                         ),
                         t(
@@ -893,7 +893,7 @@ fn press(l: Lang) -> Doc {
             "The name, descriptions, logo and colours, ready to copy or download.",
         ),
         description: t(
-            "Le kit presse de KeyForge : descriptions, logo, icône et couleurs de la marque.",
+            "Le kit presse de KeyForge\u{a0}: descriptions, logo, icône et couleurs de la marque.",
             "KeyForge's press kit: descriptions, logo, icon and brand colours.",
         ),
         sections: vec![
@@ -986,7 +986,7 @@ fn press(l: Lang) -> Doc {
                 "contact",
                 t("Contact presse", "Press contact"),
                 vec![Block::P(t(
-                    "Pour une interview, une question ou un accès anticipé à l'app, écrivez-nous via une issue du dépôt GitHub en précisant « presse ».",
+                    "Pour une interview, une question ou un accès anticipé à l'app, écrivez-nous via une issue du dépôt GitHub en précisant «\u{a0}presse\u{a0}».",
                     "For an interview, a question or early access to the app, write to us through an issue on the GitHub repository, mentioning “press”.",
                 ))],
             ),
@@ -1008,7 +1008,7 @@ fn privacy(l: Lang) -> Doc {
             "The privacy policy of the KeyForge app and of this website, in plain words.",
         ),
         description: t(
-            "Politique de confidentialité de KeyForge : aucune donnée collectée par l'app, aucun cookie ni traqueur sur le site.",
+            "Politique de confidentialité de KeyForge\u{a0}: aucune donnée collectée par l'app, aucun cookie ni traqueur sur le site.",
             "KeyForge privacy policy: no data collected by the app, no cookies or trackers on the website.",
         ),
         sections: vec![
@@ -1035,7 +1035,7 @@ fn privacy(l: Lang) -> Doc {
                 t("L'application", "The app"),
                 vec![
                     Block::P(t(
-                        "Une sauvegarde chiffrée n'est créée que si vous la demandez : c'est un texte chiffré par Brocolis 🥦 sous votre phrase, que vous gardez où vous voulez. Personne ne peut l'ouvrir sans cette phrase, pas même l'éditeur.",
+                        "Une sauvegarde chiffrée n'est créée que si vous la demandez\u{a0}: c'est un texte chiffré par Brocolis 🥦 sous votre phrase, que vous gardez où vous voulez. Personne ne peut l'ouvrir sans cette phrase, pas même l'éditeur.",
                         "An encrypted backup is only created when you ask for it: a text encrypted by Brocolis 🥦 under your passphrase, kept wherever you choose. Nobody can open it without that passphrase, not even the publisher.",
                     )),
                     Block::P(t(
@@ -1043,7 +1043,7 @@ fn privacy(l: Lang) -> Doc {
                         "Your secrets, usernames and notes are stored only on your iPhone, in the iOS Keychain. Your settings are kept in the app's local preferences. Nothing is sent to the publisher or to third parties.",
                     )),
                     Block::P(t(
-                        "Face ID et Touch ID sont gérés par iOS : l'app reçoit seulement la réponse « autorisé » ou « refusé ».",
+                        "Face ID et Touch ID sont gérés par iOS\u{a0}: l'app reçoit seulement la réponse «\u{a0}autorisé\u{a0}» ou «\u{a0}refusé\u{a0}».",
                         "Face ID and Touch ID are handled by iOS: the app only receives “allowed” or “denied”.",
                     )),
                 ],
@@ -1068,7 +1068,7 @@ fn privacy(l: Lang) -> Doc {
                 "rights",
                 t("Vos droits", "Your rights"),
                 vec![Block::P(t(
-                    "Conformément au RGPD, vous disposez d'un droit d'accès, de rectification et d'effacement. Comme ni l'app ni le site ne conservent de données vous concernant, il n'y a en pratique rien à extraire ni à effacer de notre côté. Pour toute question, écrivez-nous via le dépôt GitHub ; vous pouvez aussi saisir la CNIL.",
+                    "Conformément au RGPD, vous disposez d'un droit d'accès, de rectification et d'effacement. Comme ni l'app ni le site ne conservent de données vous concernant, il n'y a en pratique rien à extraire ni à effacer de notre côté. Pour toute question, écrivez-nous via le dépôt GitHub\u{202f}; vous pouvez aussi saisir la CNIL.",
                     "Under the GDPR, you have rights of access, rectification and erasure. Since neither the app nor the website keeps data about you, there is in practice nothing to extract or erase on our side. For any question, write to us through the GitHub repository; you can also contact the CNIL.",
                 ))],
             ),
@@ -1113,7 +1113,7 @@ fn terms(l: Lang) -> Doc {
                 vec![Block::Note(
                     "lock",
                     t(
-                        "Vos secrets ne sont stockés que sur votre appareil : l'éditeur n'y a pas accès et ne peut pas les récupérer en cas de perte, de vol ou d'effacement de l'iPhone.",
+                        "Vos secrets ne sont stockés que sur votre appareil\u{a0}: l'éditeur n'y a pas accès et ne peut pas les récupérer en cas de perte, de vol ou d'effacement de l'iPhone.",
                         "Your secrets are stored only on your device: the publisher has no access to them and cannot recover them if the iPhone is lost, stolen or erased.",
                     ),
                 )],
@@ -1130,7 +1130,7 @@ fn terms(l: Lang) -> Doc {
                 "liability",
                 t("Responsabilité", "Liability"),
                 vec![Block::P(t(
-                    "L'application et le site sont fournis « en l'état ». L'éditeur s'efforce de les garder fiables et sûrs, sans pouvoir garantir l'absence totale d'erreur ou d'interruption.",
+                    "L'application et le site sont fournis «\u{a0}en l'état\u{a0}». L'éditeur s'efforce de les garder fiables et sûrs, sans pouvoir garantir l'absence totale d'erreur ou d'interruption.",
                     "The app and website are provided “as is”. The publisher strives to keep them reliable and safe, without being able to guarantee they are entirely free of errors or interruptions.",
                 ))],
             ),
@@ -1138,7 +1138,7 @@ fn terms(l: Lang) -> Doc {
                 "law",
                 t("Droit applicable", "Governing law"),
                 vec![Block::P(t(
-                    "Ces conditions sont régies par le droit français. Elles peuvent évoluer ; la date de mise à jour figure en haut de cette page.",
+                    "Ces conditions sont régies par le droit français. Elles peuvent évoluer\u{202f}; la date de mise à jour figure en haut de cette page.",
                     "These terms are governed by French law. They may change; the update date appears at the top of this page.",
                 ))],
             ),
@@ -1157,7 +1157,7 @@ fn legal(l: Lang) -> Doc {
             "Legal information about the publisher and host of this website.",
         ),
         description: t(
-            "Mentions légales du site KeyForge : éditeur, hébergeur, propriété intellectuelle.",
+            "Mentions légales du site KeyForge\u{a0}: éditeur, hébergeur, propriété intellectuelle.",
             "KeyForge website legal notice: publisher, host, intellectual property.",
         ),
         sections: vec![
@@ -1166,11 +1166,11 @@ fn legal(l: Lang) -> Doc {
                 t("Éditeur", "Publisher"),
                 vec![
                     Block::P(t(
-                        "Ce site est édité par Maxime Nathan Lestage, à titre personnel. Directeur de la publication : Maxime Nathan Lestage.",
+                        "Ce site est édité par Maxime Nathan Lestage, à titre personnel. Directeur de la publication\u{a0}: Maxime Nathan Lestage.",
                         "This website is published by Maxime Nathan Lestage, in a personal capacity. Publication director: Maxime Nathan Lestage.",
                     )),
                     Block::P(t(
-                        "Contact : via les issues du dépôt GitHub du projet.",
+                        "Contact\u{a0}: via les issues du dépôt GitHub du projet.",
                         "Contact: through the issues of the project's GitHub repository.",
                     )),
                 ],
@@ -1200,7 +1200,7 @@ fn legal(l: Lang) -> Doc {
                         "Website built with Paquets, in Rust and WebAssembly.",
                     ),
                     t(
-                        "Chiffrement post-quantique fourni par Brocolis 🥦 (brocolis-proto : X25519 + ML-KEM-768).",
+                        "Chiffrement post-quantique fourni par Brocolis 🥦 (brocolis-proto\u{a0}: X25519 + ML-KEM-768).",
                         "Post-quantum encryption provided by Brocolis 🥦 (brocolis-proto: X25519 + ML-KEM-768).",
                     ),
                     t(
@@ -1231,7 +1231,7 @@ fn accessibility(l: Lang) -> Doc {
             "What we do so that everyone can use KeyForge, and how to tell us about a barrier.",
         ),
         description: t(
-            "Déclaration d'accessibilité de KeyForge : engagements, mesures prises et contact.",
+            "Déclaration d'accessibilité de KeyForge\u{a0}: engagements, mesures prises et contact.",
             "KeyForge accessibility statement: commitments, measures taken and contact.",
         ),
         sections: vec![
@@ -1248,7 +1248,7 @@ fn accessibility(l: Lang) -> Doc {
                         "Animations calm down when your system asks for reduced motion.",
                     ),
                     t(
-                        "Le contenu est lisible sans JavaScript : les pages sont rendues par le serveur.",
+                        "Le contenu est lisible sans JavaScript\u{a0}: les pages sont rendues par le serveur.",
                         "Content is readable without JavaScript: pages are rendered by the server.",
                     ),
                     t(
@@ -1266,15 +1266,15 @@ fn accessibility(l: Lang) -> Doc {
                 t("Dans l'application", "In the app"),
                 vec![Block::List(vec![
                     t(
-                        "Dynamic Type : les textes suivent la taille choisie dans iOS.",
+                        "Dynamic Type\u{a0}: les textes suivent la taille choisie dans iOS.",
                         "Dynamic Type: text follows the size chosen in iOS.",
                     ),
                     t(
-                        "VoiceOver : chaque bouton et chaque jauge a une description.",
+                        "VoiceOver\u{a0}: chaque bouton et chaque jauge a une description.",
                         "VoiceOver: every button and gauge has a description.",
                     ),
                     t(
-                        "« Réduire les animations » est respecté.",
+                        "«\u{a0}Réduire les animations\u{a0}» est respecté.",
                         "“Reduce Motion” is respected.",
                     ),
                 ])],
@@ -1283,7 +1283,7 @@ fn accessibility(l: Lang) -> Doc {
                 "feedback",
                 t("Nous signaler un obstacle", "Report a barrier"),
                 vec![Block::P(t(
-                    "Si un élément vous bloque, dites-le-nous via une issue du dépôt GitHub : nous chercherons une solution et, en attendant, une autre façon d'accéder à l'information.",
+                    "Si un élément vous bloque, dites-le-nous via une issue du dépôt GitHub\u{a0}: nous chercherons une solution et, en attendant, une autre façon d'accéder à l'information.",
                     "If something blocks you, tell us through an issue on the GitHub repository: we'll look for a fix and, meanwhile, another way to reach the information.",
                 ))],
             ),
@@ -1310,7 +1310,7 @@ fn not_found(ctx: &Ctx) -> Page {
                 )
                 .child(split(h1, t("Cette clé n'ouvre aucune porte.", "This key opens no door.")))
                 .child(p().class("lead").attr("data-reveal", "").text(t(
-                    "La page demandée n'existe pas ou a changé d'adresse. Pas de panique : vos secrets, eux, n'ont pas bougé.",
+                    "La page demandée n'existe pas ou a changé d'adresse. Pas de panique\u{a0}: vos secrets, eux, n'ont pas bougé.",
                     "The page you asked for doesn't exist or has moved. Don't worry: your secrets haven't.",
                 )))
                 .child(

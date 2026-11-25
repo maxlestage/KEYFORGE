@@ -132,7 +132,7 @@ pub fn app() -> App {
         Pwa::new("KeyForge")
             .short_name("KeyForge")
             .description(
-                "Forgez des clés incassables : mots de passe, phrases de passe et codes PIN.",
+                "Forgez des clés incassables\u{a0}: mots de passe, phrases de passe et codes PIN.",
             )
             .start_url("/{lang}/")
             .theme_color("#0b0a12")

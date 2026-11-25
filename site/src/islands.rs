@@ -222,7 +222,7 @@ pub fn generator(props: &str) -> Node {
                                 )
                                 .child(span().text_dyn(move || {
                                     if copied.get() {
-                                        l.t("Copié !", "Copied!").into()
+                                        l.t("Copié\u{202f}!", "Copied!").into()
                                     } else {
                                         l.t("Copier", "Copy").into()
                                     }
@@ -347,7 +347,7 @@ pub fn generator(props: &str) -> Node {
                     p().class("gen__group gen__hint")
                         .bool_attr("hidden", move || mode() != Mode::Pin)
                         .text(l.t(
-                            "Chaque chiffre est tiré sans biais. Un code PIN protège un appareil qui bloque les essais : pour un compte en ligne, préférez une phrase de passe.",
+                            "Chaque chiffre est tiré sans biais. Un code PIN protège un appareil qui bloque les essais\u{a0}: pour un compte en ligne, préférez une phrase de passe.",
                             "Each digit is drawn without bias. A PIN protects a device that blocks retries: for an online account, prefer a passphrase.",
                         )),
                 ),
@@ -479,22 +479,22 @@ pub fn analyzer(props: &str) -> Node {
             if empty() {
                 return l
                     .t(
-                        "Votre saisie reste dans cet onglet : elle n'est ni envoyée, ni enregistrée.",
+                        "Votre saisie reste dans cet onglet\u{a0}: elle n'est ni envoyée, ni enregistrée.",
                         "What you type stays in this tab: it is neither sent nor stored.",
                     )
                     .into();
             }
             result.with(|r| {
                 if r.common {
-                    l.t("Ce mot de passe figure parmi les plus utilisés au monde : changez-le partout, tout de suite.", "This is one of the most used passwords in the world: change it everywhere, right now.")
+                    l.t("Ce mot de passe figure parmi les plus utilisés au monde\u{a0}: changez-le partout, tout de suite.", "This is one of the most used passwords in the world: change it everywhere, right now.")
                 } else if r.patterns {
                     l.t("Les suites et répétitions sont essayées en premier. Mélangez davantage.", "Runs and repeats are tried first. Mix it up more.")
                 } else if r.length < 12 {
-                    l.t("Allongez-le : chaque caractère multiplie le travail de l'attaquant.", "Make it longer: every character multiplies the attacker's work.")
+                    l.t("Allongez-le\u{a0}: chaque caractère multiplie le travail de l'attaquant.", "Make it longer: every character multiplies the attacker's work.")
                 } else if r.level < Level::Strong {
                     l.t("Ajoutez des classes de caractères, ou passez à une phrase de passe de 6 mots.", "Add character classes, or switch to a 6-word passphrase.")
                 } else {
-                    l.t("Solide. Gardez-le unique : un mot de passe par compte, rangé dans un coffre.", "Solid. Keep it unique: one password per account, kept in a vault.")
+                    l.t("Solide. Gardez-le unique\u{a0}: un mot de passe par compte, rangé dans un coffre.", "Solid. Keep it unique: one password per account, kept in a vault.")
                 }
                 .into()
             })
@@ -573,7 +573,7 @@ pub fn pwa(props: &str) -> Node {
             p().class("pwa__hint")
                 .bool_attr("hidden", move || installable.get() || installed.get())
                 .text(l.t(
-                    "Sur iPhone : Partager → « Sur l'écran d'accueil ».",
+                    "Sur iPhone\u{a0}: Partager → «\u{a0}Sur l'écran d'accueil\u{a0}».",
                     "On iPhone: Share → “Add to Home Screen”.",
                 )),
         )
@@ -778,7 +778,7 @@ pub fn sealer(props: &str) -> Node {
                     if generated.get() {
                         return l
                             .t(
-                                "Phrase générée : 6 mots tirés parmi 1 024 · Correcte · 60 bits, renforcés par Argon2id",
+                                "Phrase générée\u{a0}: 6 mots tirés parmi 1 024 · Correcte · 60 bits, renforcés par Argon2id",
                                 "Generated phrase: 6 words drawn from 1,024 · Fair · 60 bits, hardened by Argon2id",
                             )
                             .into();
@@ -786,7 +786,7 @@ pub fn sealer(props: &str) -> Node {
                     let a = forge::analyze(&phrase.get());
                     format!(
                         "{} {} · {} bits",
-                        l.t("Phrase :", "Passphrase:"),
+                        l.t("Phrase\u{a0}:", "Passphrase:"),
                         level_label(l, a.level),
                         number(l, a.bits, 0)
                     )
@@ -826,7 +826,7 @@ pub fn sealer(props: &str) -> Node {
                             l.t("Le secret, ouvert dans ce navigateur", "The secret, opened in this browser")
                         } else {
                             l.t(
-                                "Votre secret scellé : à garder où vous voulez, il ne s'ouvre qu'avec la phrase.",
+                                "Votre secret scellé\u{a0}: à garder où vous voulez, il ne s'ouvre qu'avec la phrase.",
                                 "Your sealed secret: keep it anywhere, it only opens with the passphrase.",
                             )
                         }
@@ -844,7 +844,7 @@ pub fn sealer(props: &str) -> Node {
                         })
                         .child(icon("copy"))
                         .child(span().text_dyn(move || {
-                            if copied.get() { l.t("Copié !", "Copied!") } else { l.t("Copier", "Copy") }.into()
+                            if copied.get() { l.t("Copié\u{202f}!", "Copied!") } else { l.t("Copier", "Copy") }.into()
                         })),
                 ),
         )
@@ -877,7 +877,7 @@ pub fn missing(lang: Lang, what: Missing) -> Option<&'static str> {
             phrase: false,
             sealed: true,
         } => t(
-            "Choisissez une phrase secrète de 8 caractères au moins, ou touchez « Générer une phrase ».",
+            "Choisissez une phrase secrète de 8 caractères au moins, ou touchez «\u{a0}Générer une phrase\u{a0}».",
             "Choose a passphrase of at least 8 characters, or tap “Generate a phrase”.",
         ),
         Missing::Open { sealed: false, .. } => t(
@@ -885,7 +885,7 @@ pub fn missing(lang: Lang, what: Missing) -> Option<&'static str> {
             "First paste the sealed secret (both [[BROCOLIS…]] tokens).",
         ),
         Missing::Encrypt { bundle: false, .. } => t(
-            "Collez d'abord le paquet de clés du destinataire, ou touchez « M'écrire à moi-même » pour essayer.",
+            "Collez d'abord le paquet de clés du destinataire, ou touchez «\u{a0}M'écrire à moi-même\u{a0}» pour essayer.",
             "First paste the recipient's key bundle, or tap “Write to myself” to try it.",
         ),
         Missing::Encrypt { message: false, .. } => t(
@@ -903,7 +903,7 @@ pub fn missing(lang: Lang, what: Missing) -> Option<&'static str> {
 /// Un paquet de clés illisible, quand on chiffre.
 pub fn bad_bundle(lang: Lang) -> &'static str {
     lang.t(
-        "Ce texte n'est pas un paquet de clés Brocolis : copiez-le en entier depuis « Mon identité ».",
+        "Ce texte n'est pas un paquet de clés Brocolis\u{a0}: copiez-le en entier depuis «\u{a0}Mon identité\u{a0}».",
         "This text is not a Brocolis key bundle: copy it in full from “My identity”.",
     )
 }
@@ -915,11 +915,11 @@ pub fn pq_error(lang: Lang, e: &brocolis_proto::Erreur) -> &'static str {
     use brocolis_proto::Erreur;
     match e {
         Erreur::PqIndisponible => lang.t(
-            "Ce paquet ne propose pas ML-KEM-768 : KeyForge refuse de chiffrer sans post-quantique.",
+            "Ce paquet ne propose pas ML-KEM-768\u{a0}: KeyForge refuse de chiffrer sans post-quantique.",
             "This bundle doesn't offer ML-KEM-768: KeyForge refuses to encrypt without post-quantum.",
         ),
         Erreur::Signature | Erreur::CleInvalide => lang.t(
-            "Paquet de clés invalide : une signature Ed25519 ne correspond pas.",
+            "Paquet de clés invalide\u{a0}: une signature Ed25519 ne correspond pas.",
             "Invalid key bundle: an Ed25519 signature doesn't match.",
         ),
         Erreur::Base64 | Erreur::TropGrand => lang.t(
@@ -931,7 +931,7 @@ pub fn pq_error(lang: Lang, e: &brocolis_proto::Erreur) -> &'static str {
             "This message isn't addressed to this identity.",
         ),
         Erreur::Rejoue => lang.t(
-            "Ce message a déjà été ouvert : un premier message ne s'ouvre qu'une fois.",
+            "Ce message a déjà été ouvert\u{a0}: un premier message ne s'ouvre qu'une fois.",
             "This message was already opened: a first message opens only once.",
         ),
         Erreur::JetonAbsent => lang.t(
@@ -999,7 +999,7 @@ pub fn quantum(props: &str) -> Node {
             .child(icon("copy"))
             .child(span().text_dyn(move || {
                 if copied.get() {
-                    l.t("Copié !", "Copied!")
+                    l.t("Copié\u{202f}!", "Copied!")
                 } else {
                     l.t("Copier", "Copy")
                 }
@@ -1052,7 +1052,7 @@ pub fn quantum(props: &str) -> Node {
                             if p.is_empty() { "····-····-····-····".into() } else { p }
                         }))
                         .child(small().class("muted").text_dyn(move || {
-                            format!("{} {}", l.t("Vue par vos correspondants :", "Seen by your correspondents:"), sender_print.get())
+                            format!("{} {}", l.t("Vue par vos correspondants\u{a0}:", "Seen by your correspondents:"), sender_print.get())
                         })),
                 )
                 .child(span().class("sealer__label").text(l.t(
@@ -1077,7 +1077,7 @@ pub fn quantum(props: &str) -> Node {
                         ),
                 )
                 .child(p().class("gen__hint").text(l.t(
-                    "Votre identité est créée dans cet onglet et y reste (stockage de session) : les clés secrètes ne quittent jamais le navigateur. Pour une identité durable, utilisez l'app iOS.",
+                    "Votre identité est créée dans cet onglet et y reste (stockage de session)\u{a0}: les clés secrètes ne quittent jamais le navigateur. Pour une identité durable, utilisez l'app iOS.",
                     "Your identity is created in this tab and stays there (session storage): secret keys never leave the browser. For a lasting identity, use the iOS app.",
                 ))),
         )
@@ -1157,10 +1157,10 @@ pub fn quantum(props: &str) -> Node {
                 .child(p().class("sealer__label").text_dyn(move || {
                     if tab.get() == 2 {
                         let f = from.get();
-                        format!("{} {f}", l.t("Ouvert. Expéditeur :", "Opened. Sender:"))
+                        format!("{} {f}", l.t("Ouvert. Expéditeur\u{a0}:", "Opened. Sender:"))
                     } else {
                         l.t(
-                            "Chiffré pour ce seul destinataire. Envoyez-le par n'importe quel canal : seul son appareil peut l'ouvrir, une seule fois.",
+                            "Chiffré pour ce seul destinataire. Envoyez-le par n'importe quel canal\u{a0}: seul son appareil peut l'ouvrir, une seule fois.",
                             "Encrypted for this recipient only. Send it over any channel: only their device can open it, once.",
                         )
                         .into()
