@@ -23,6 +23,22 @@ async fn every_page_answers_in_both_languages() {
     }
 }
 
+/// Un identifiant en double casse les références (`url(#…)`, ancres, `aria-*`) : le
+/// dégradé du logo, par exemple, dépendrait du logo de l'introduction, masqué quand
+/// les animations sont réduites.
+#[tokio::test]
+async fn ids_are_unique_on_every_page() {
+    let client = app().test().await;
+    for route in Route::all() {
+        let html = client.get(&route.path()).await.text();
+        let mut seen = std::collections::HashSet::new();
+        for part in html.split(" id=\"").skip(1) {
+            let id = part.split('"').next().unwrap_or_default();
+            assert!(seen.insert(id), "{} : id « {id} » en double", route.path());
+        }
+    }
+}
+
 #[tokio::test]
 async fn the_home_page_has_its_islands_and_sections() {
     let client = app().test().await;

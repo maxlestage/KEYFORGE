@@ -933,7 +933,7 @@ fn press(l: Lang) -> Doc {
                         div()
                             .class("brand-assets")
                             .child(
-                                div().class("brand-asset").child(logo()).child(
+                                div().class("brand-asset").child(logo("press")).child(
                                     a().class("btn btn--ghost btn--sm")
                                         .href("/assets/logo.svg")
                                         .attr("download", "keyforge-logo.svg")

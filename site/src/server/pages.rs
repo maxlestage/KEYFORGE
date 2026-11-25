@@ -222,7 +222,7 @@ fn loader(ctx: &Ctx) -> Element {
         .child(
             div()
                 .class("loader__inner")
-                .child(div().class("loader__logo").child(logo()))
+                .child(div().class("loader__logo").child(logo("intro")))
                 .child(
                     div().class("loader__word").children(
                         "KEYFORGE"
@@ -279,7 +279,7 @@ fn navbar(ctx: &Ctx) -> Element {
             a().class("nav__brand")
                 .href(ctx.home(""))
                 .attr("aria-label", ctx.t("KeyForge, accueil", "KeyForge, home"))
-                .child(logo())
+                .child(logo("nav"))
                 .child(span().class("nav__name").text("KeyForge")),
         )
         .child(
@@ -446,7 +446,7 @@ fn site_footer(ctx: &Ctx) -> Element {
                         .child(
                             a().class("fbrand__logo")
                                 .href(ctx.home(""))
-                                .child(logo())
+                                .child(logo("footer"))
                                 .child(span().text("KeyForge")),
                         )
                         .child(p().class("muted").text(t(
@@ -1858,7 +1858,7 @@ fn download(ctx: &Ctx) -> Element {
         .child(
             div()
                 .class("wrap download__inner")
-                .child(div().class("download__logo").attr("data-reveal", "").child(logo()))
+                .child(div().class("download__logo").attr("data-reveal", "").child(logo("download")))
                 .child(split(h2, t("Prêt à forger vos clés ?", "Ready to forge your keys?")))
                 .child(p().class("lead").attr("data-reveal", "").text(t(
                     "KeyForge arrive sur l'App Store pour iPhone et iPad (iOS 17 ou plus récent). En attendant, installez ce site : il fonctionne hors ligne, avec le générateur et le testeur.",

@@ -136,8 +136,13 @@ pub fn icon(name: &str) -> Element {
 }
 
 /// Le logo de KeyForge : une clé forgée dans une étincelle.
-pub const LOGO: &str = r##"<svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><defs><linearGradient id="kf-g" x1="6" y1="58" x2="58" y2="6" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#7c5cff"/><stop offset=".5" stop-color="#ff2e7e"/><stop offset="1" stop-color="#ff8a3d"/></linearGradient></defs><rect class="logo__bg" x="2" y="2" width="60" height="60" rx="16" fill="url(#kf-g)"/><g class="logo__key" stroke="#fff" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="23" cy="40" r="9"/><path d="M29.5 33.5 46 17"/><path d="m40 23 5 5"/><path d="m44.5 18.5 4 4"/></g><g class="logo__spark" fill="#fff"><path d="M48 38.5l1.6 4 4 1.6-4 1.6-1.6 4-1.6-4-4-1.6 4-1.6z"/></g></svg>"##;
-
-pub fn logo() -> Element {
-    span().class("logo").html(LOGO)
+///
+/// `id` distingue le dégradé de chaque logo d'une page : un seul identifiant partagé
+/// ferait dépendre tous les logos du premier, celui de l'introduction, que
+/// `prefers-reduced-motion` masque (`display: none`) ; Firefox et Safari ne peignent pas
+/// un dégradé défini dans un élément masqué, et le fond des logos disparaîtrait.
+pub fn logo(id: &str) -> Element {
+    span().class("logo").html(format!(
+        r##"<svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><defs><linearGradient id="kf-g-{id}" x1="6" y1="58" x2="58" y2="6" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#7c5cff"/><stop offset=".5" stop-color="#ff2e7e"/><stop offset="1" stop-color="#ff8a3d"/></linearGradient></defs><rect class="logo__bg" x="2" y="2" width="60" height="60" rx="16" fill="url(#kf-g-{id})"/><g class="logo__key" stroke="#fff" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="23" cy="40" r="9"/><path d="M29.5 33.5 46 17"/><path d="m40 23 5 5"/><path d="m44.5 18.5 4 4"/></g><g class="logo__spark" fill="#fff"><path d="M48 38.5l1.6 4 4 1.6-4 1.6-1.6 4-1.6-4-4-1.6 4-1.6z"/></g></svg>"##
+    ))
 }
