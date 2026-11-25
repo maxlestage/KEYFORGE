@@ -2331,6 +2331,13 @@ a:focus-visible .roll__in > span {
 
 .gen__value.is-phrase {
   word-break: normal;
+  overflow-wrap: normal;
+}
+
+/* En boîte en ligne, chaque lettre serait un point de coupure : en ligne, la phrase se
+ * coupe comme un texte, après ses séparateurs. */
+.gen__value.is-phrase .c {
+  display: inline;
 }
 
 .c {
@@ -3007,7 +3014,7 @@ input[type="range"]:active::-webkit-slider-thumb {
   border: 1px solid var(--line-2);
   background: var(--bg-2);
   color: var(--fg);
-  font: 600 15px/1.5 var(--mono);
+  font: 600 16px/1.5 var(--mono);
   resize: vertical;
   outline: none;
   transition: border-color 0.3s, box-shadow 0.3s;
@@ -3085,14 +3092,25 @@ input[type="range"]:active::-webkit-slider-thumb {
 }
 
 .sealer__error {
+  --err: #ff8a95;
   padding: 12px 14px;
   border-radius: 14px;
   background: rgba(255, 77, 94, 0.1);
   border: 1px solid rgba(255, 77, 94, 0.35);
-  color: #ff8a95;
+  color: var(--err);
   font-weight: 600;
   font-size: 15px;
   animation: shake-x 0.5s var(--ease);
+}
+
+:root[data-theme="light"] .sealer__error {
+  --err: #c4203a;
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) .sealer__error {
+    --err: #c4203a;
+  }
 }
 
 @keyframes shake-x {
@@ -4976,6 +4994,14 @@ input[type="range"]:active::-webkit-slider-thumb {
 
   .float {
     display: none;
+  }
+
+  .sealer__phrase {
+    grid-template-columns: 1fr;
+  }
+
+  .sealer__gen {
+    justify-self: start;
   }
 
   .phone-wrap__orbit {

@@ -162,7 +162,7 @@ pub fn generator(props: &str) -> Node {
                         .class_if("is-phrase", move || mode() == Mode::Passphrase)
                         .children_indexed(
                             move || shown.get(),
-                            |item| {
+                            move |item| {
                                 span()
                                     .attr_dyn("class", move || {
                                         let (c, done) = item.get();
@@ -172,7 +172,22 @@ pub fn generator(props: &str) -> Node {
                                             if done { " is-set" } else { "" }
                                         )
                                     })
-                                    .text_dyn(move || item.get().0.to_string())
+                                    .text_dyn(move || {
+                                        let (c, done) = item.get();
+                                        // Dans une phrase, la ligne ne se coupe qu'après un
+                                        // séparateur, jamais au milieu d'un mot.
+                                        let breaks = done
+                                            && opts.with(|o| {
+                                                o.mode == Mode::Passphrase
+                                                    && o.separator == c
+                                                    && c != ' '
+                                            });
+                                        if breaks {
+                                            format!("{c}\u{200B}")
+                                        } else {
+                                            c.to_string()
+                                        }
+                                    })
                                     .into()
                             },
                         ),
@@ -708,7 +723,7 @@ pub fn sealer(props: &str) -> Node {
                                 .attr_dyn("type", move || {
                                     if visible.get() { "text" } else { "password" }.into()
                                 })
-                                .attr("placeholder", l.t("Phrase secrète (8 caractères au moins)", "Passphrase (at least 8 characters)"))
+                                .attr("placeholder", l.t("Phrase secrète", "Passphrase"))
                                 .attr("aria-label", l.t("Phrase secrète", "Passphrase"))
                                 .attr("autocomplete", "off")
                                 .attr("spellcheck", "false")
@@ -834,6 +849,63 @@ pub fn sealer(props: &str) -> Node {
                 ),
         )
         .into()
+}
+
+// ----- Champs manquants ------------------------------------------------------------------
+
+/// Ce qui manque avant de lancer une opération, dit simplement (`None` : tout est là).
+pub enum Missing {
+    /// Sceller : le texte, puis la phrase.
+    Seal { text: bool, phrase: bool },
+    /// Ouvrir un scellé : le secret scellé, puis la phrase.
+    Open { sealed: bool, phrase: bool },
+    /// Chiffrer pour quelqu'un : son paquet, puis le secret.
+    Encrypt { bundle: bool, message: bool },
+    /// Déchiffrer : le message reçu.
+    Decrypt { message: bool },
+}
+
+pub fn missing(lang: Lang, what: Missing) -> Option<&'static str> {
+    let t = |fr, en| Some(lang.t(fr, en));
+    match what {
+        Missing::Seal { text: false, .. } => t(
+            "Écrivez d'abord ce que vous voulez protéger.",
+            "First write what you want to protect.",
+        ),
+        Missing::Seal { phrase: false, .. }
+        | Missing::Open {
+            phrase: false,
+            sealed: true,
+        } => t(
+            "Choisissez une phrase secrète de 8 caractères au moins, ou touchez « Générer une phrase ».",
+            "Choose a passphrase of at least 8 characters, or tap “Generate a phrase”.",
+        ),
+        Missing::Open { sealed: false, .. } => t(
+            "Collez d'abord le secret scellé (les deux jetons [[BROCOLIS…]]).",
+            "First paste the sealed secret (both [[BROCOLIS…]] tokens).",
+        ),
+        Missing::Encrypt { bundle: false, .. } => t(
+            "Collez d'abord le paquet de clés du destinataire, ou touchez « M'écrire à moi-même » pour essayer.",
+            "First paste the recipient's key bundle, or tap “Write to myself” to try it.",
+        ),
+        Missing::Encrypt { message: false, .. } => t(
+            "Écrivez d'abord le secret à envoyer.",
+            "First write the secret to send.",
+        ),
+        Missing::Decrypt { message: false } => t(
+            "Collez d'abord le message reçu ([[BROCOLIS:v4:…]]).",
+            "First paste the message you received ([[BROCOLIS:v4:…]]).",
+        ),
+        _ => None,
+    }
+}
+
+/// Un paquet de clés illisible, quand on chiffre.
+pub fn bad_bundle(lang: Lang) -> &'static str {
+    lang.t(
+        "Ce texte n'est pas un paquet de clés Brocolis : copiez-le en entier depuis « Mon identité ».",
+        "This text is not a Brocolis key bundle: copy it in full from “My identity”.",
+    )
 }
 
 // ----- Échange post-quantique (Brocolis v4) ----------------------------------------------
@@ -1098,4 +1170,85 @@ pub fn quantum(props: &str) -> Node {
                 .child(copy_button(output)),
         )
         .into()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn missing_fields_are_named() {
+        let l = Lang::Fr;
+        assert!(
+            missing(
+                l,
+                Missing::Encrypt {
+                    bundle: false,
+                    message: true
+                }
+            )
+            .unwrap()
+            .contains("paquet de clés")
+        );
+        assert!(
+            missing(
+                l,
+                Missing::Encrypt {
+                    bundle: true,
+                    message: false
+                }
+            )
+            .unwrap()
+            .contains("secret à envoyer")
+        );
+        assert!(
+            missing(
+                l,
+                Missing::Encrypt {
+                    bundle: true,
+                    message: true
+                }
+            )
+            .is_none()
+        );
+        assert!(
+            missing(
+                l,
+                Missing::Seal {
+                    text: false,
+                    phrase: false
+                }
+            )
+            .unwrap()
+            .contains("protéger")
+        );
+        assert!(
+            missing(
+                l,
+                Missing::Seal {
+                    text: true,
+                    phrase: false
+                }
+            )
+            .unwrap()
+            .contains("phrase secrète")
+        );
+        assert!(
+            missing(
+                l,
+                Missing::Open {
+                    sealed: false,
+                    phrase: true
+                }
+            )
+            .unwrap()
+            .contains("scellé")
+        );
+        assert!(
+            missing(l, Missing::Decrypt { message: false })
+                .unwrap()
+                .contains("message reçu")
+        );
+        assert!(missing(l, Missing::Decrypt { message: true }).is_none());
+    }
 }
