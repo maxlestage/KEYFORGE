@@ -29,8 +29,9 @@ pub fn normalize_base(base: &str) -> String {
 }
 
 /// Place derrière `base` chaque adresse absolue d'un texte : tout `"/x` (guillemet,
-/// barre, puis autre chose qu'une barre). Les URL complètes (`https://…`) et les
-/// adresses relatives à un protocole (`//…`) ne changent pas.
+/// barre, puis autre chose qu'une barre). Les URL complètes (`https://…`), les
+/// adresses relatives à un protocole (`//…`) et la fin d'une balise auto-fermante
+/// (`href="…"/>` : le guillemet fermant, puis `/>`) ne changent pas.
 pub fn with_base(text: &str, base: &str) -> String {
     if base.is_empty() {
         return text.to_owned();
@@ -40,7 +41,10 @@ pub fn with_base(text: &str, base: &str) -> String {
     while let Some(i) = rest.find("\"/") {
         out.push_str(&rest[..=i]);
         let after = &rest[i + 1..];
-        if !after.starts_with("//") && !after.starts_with(&format!("{base}/")) {
+        if !after.starts_with("//")
+            && !after.starts_with("/>")
+            && !after.starts_with(&format!("{base}/"))
+        {
             out.push_str(base);
         }
         rest = after;
@@ -180,6 +184,12 @@ mod tests {
         assert_eq!(with_base(&out, "/KEYFORGE"), out);
         assert_eq!(with_base(html, ""), html);
         assert_eq!(normalize_base("KEYFORGE/"), "/KEYFORGE");
+        // La fin d'une balise auto-fermante n'est pas une adresse.
+        let tags = r#"<link rel="canonical" href="https://x/fr/"/><meta name="a" content="b"/><path d="M1 2"/><a href="/">r</a>"#;
+        let out = with_base(tags, "/KEYFORGE");
+        assert!(!out.contains("\"/KEYFORGE/>"), "{out}");
+        assert!(out.contains(r#"<path d="M1 2"/>"#));
+        assert!(out.contains(r#"href="/KEYFORGE/""#));
         assert_eq!(normalize_base("/"), "");
     }
 }
