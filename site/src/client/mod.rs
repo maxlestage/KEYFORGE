@@ -358,6 +358,24 @@ pub fn seal_or_open(
     error: State<String>,
     busy: State<bool>,
 ) {
+    use crate::islands::{Missing, missing};
+    let filled = |s: &str| !s.trim().is_empty();
+    let what = if opening {
+        Missing::Open {
+            sealed: filled(&text),
+            phrase: filled(&phrase),
+        }
+    } else {
+        Missing::Seal {
+            text: filled(&text),
+            phrase: filled(&phrase),
+        }
+    };
+    if let Some(message) = missing(lang, what) {
+        error.set(message.to_owned());
+        busy.set(false);
+        return;
+    }
     later(120, move || {
         let result = if opening {
             crate::seal::open(&text, &phrase, now(), &mut brocolis_proto::hasard::system())
@@ -441,6 +459,23 @@ pub fn pq_run(
     error: State<String>,
     busy: State<bool>,
 ) {
+    use crate::islands::{Missing, bad_bundle, missing};
+    let filled = |s: &str| !s.trim().is_empty();
+    let what = if decrypting {
+        Missing::Decrypt {
+            message: filled(&incoming),
+        }
+    } else {
+        Missing::Encrypt {
+            bundle: filled(&recipient),
+            message: filled(&message),
+        }
+    };
+    if let Some(text) = missing(lang, what) {
+        error.set(text.to_owned());
+        busy.set(false);
+        return;
+    }
     later(60, move || {
         let mut rng = brocolis_proto::hasard::system();
         let result = PQ_DEVICE.with(|slot| {
@@ -458,6 +493,11 @@ pub fn pq_run(
         });
         match result {
             Ok(out) => output.set(out),
+            Err(
+                brocolis_proto::Erreur::Format
+                | brocolis_proto::Erreur::Base64
+                | brocolis_proto::Erreur::TropGrand,
+            ) if !decrypting => error.set(bad_bundle(lang).to_owned()),
             Err(e) => error.set(crate::islands::pq_error(lang, &e).to_owned()),
         }
         busy.set(false);
