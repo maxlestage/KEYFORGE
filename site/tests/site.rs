@@ -39,6 +39,18 @@ async fn ids_are_unique_on_every_page() {
     }
 }
 
+/// Les liens de la navigation ont un vrai texte pour les lecteurs d'écran, et aucun
+/// `aria-label` n'est posé sur un élément qui n'y a pas droit (ARIA 1.2).
+#[tokio::test]
+async fn navigation_names_are_real_text() {
+    let client = app().test().await;
+    let html = client.get("/fr/").await.text();
+    assert!(html.contains(r#"<span class="sr-only">Sécurité</span>"#));
+    assert!(!html.contains(r#"class="roll" aria-label"#));
+    assert!(!html.contains(r#"class="menu" aria-label"#));
+    assert!(html.contains(r#"aria-controls="menu""#));
+}
+
 #[tokio::test]
 async fn the_home_page_has_its_islands_and_sections() {
     let client = app().test().await;

@@ -105,22 +105,29 @@ pub fn section_head(kicker: &'static str, title: &'static str, lead: &'static st
 }
 
 /// Un lien dont le texte roule au survol (chaque lettre décalée).
+///
+/// Le texte lisible par les lecteurs d'écran est un vrai texte, masqué à l'écran :
+/// `aria-label` est interdit sur un `<span>` sans rôle (ARIA 1.2) et certains lecteurs
+/// d'écran l'ignorent, ce qui laisserait le lien sans nom.
 pub fn roll(text: &'static str) -> Element {
-    span().class("roll").attr("aria-label", text).child(
-        span()
-            .class("roll__in")
-            .attr("aria-hidden", "true")
-            .children(text.chars().enumerate().map(|(i, c)| {
-                span()
-                    .style(format!("--i:{i}"))
-                    .attr("data-c", c.to_string())
-                    .text(if c == ' ' {
-                        "\u{a0}".to_string()
-                    } else {
-                        c.to_string()
-                    })
-            })),
-    )
+    span()
+        .class("roll")
+        .child(span().class("sr-only").text(text))
+        .child(
+            span()
+                .class("roll__in")
+                .attr("aria-hidden", "true")
+                .children(text.chars().enumerate().map(|(i, c)| {
+                    span()
+                        .style(format!("--i:{i}"))
+                        .attr("data-c", c.to_string())
+                        .text(if c == ' ' {
+                            "\u{a0}".to_string()
+                        } else {
+                            c.to_string()
+                        })
+                })),
+        )
 }
 
 /// Un secret d'exemple, toujours le même pour une graine (rendu par le serveur, puis
@@ -313,6 +320,7 @@ fn navbar(ctx: &Ctx) -> Element {
                         .attr("type", "button")
                         .attr("data-toggle-menu", "")
                         .attr("aria-label", ctx.t("Menu", "Menu"))
+                        .attr("aria-controls", "menu")
                         .attr("aria-expanded", "false")
                         .child(span())
                         .child(span())
@@ -325,21 +333,24 @@ fn navbar(ctx: &Ctx) -> Element {
 fn menu(ctx: &Ctx) -> Element {
     div()
         .class("menu")
-        .attr("aria-label", ctx.t("Menu", "Menu"))
+        .id("menu")
         .child(div().class("menu__bg"))
         .child(
-            nav().class("menu__links").children(
-                nav_links(ctx)
-                    .into_iter()
-                    .chain([(ctx.home("download"), ctx.t("Télécharger", "Download"))])
-                    .enumerate()
-                    .map(|(i, (href, text))| {
-                        a().href(href)
-                            .style(format!("--i:{i}"))
-                            .child(span().class("menu__num").text(format!("0{}", i + 1)))
-                            .child(span().text(text))
-                    }),
-            ),
+            nav()
+                .class("menu__links")
+                .attr("aria-label", ctx.t("Menu", "Menu"))
+                .children(
+                    nav_links(ctx)
+                        .into_iter()
+                        .chain([(ctx.home("download"), ctx.t("Télécharger", "Download"))])
+                        .enumerate()
+                        .map(|(i, (href, text))| {
+                            a().href(href)
+                                .style(format!("--i:{i}"))
+                                .child(span().class("menu__num").text(format!("0{}", i + 1)))
+                                .child(span().text(text))
+                        }),
+                ),
         )
         .child(
             div().class("menu__foot").child(lang_switch(ctx)).child(
