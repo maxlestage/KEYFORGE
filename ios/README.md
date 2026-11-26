@@ -16,6 +16,8 @@ Application SwiftUI pour iPhone et iPad, iOS 17 ou plus récent, sans aucune dé
 | **Analyse** | Estimation locale de l'entropie d'un mot de passe saisi : familles de caractères, longueur, pénalités pour les répétitions, les suites (`abc`, `123`), les rangées du clavier (`azerty`, `qwerty`) et ~55 mots de passe parmi les plus courants. Niveau, temps de craquage moyen à 10¹¹ essais par seconde, critères cochés et conseils. |
 | **Réglages** | Verrouillage biométrique, effacement automatique du presse-papiers (jamais, 30 s, 1 min, 2 min), mode par défaut du générateur, retours haptiques, **chiffrement post-quantique** (mon identité, envoyer, recevoir), **sauvegarde chiffrée** du coffre (export et import au format Brocolis 🥦 v4), effacement du coffre (confirmé par Face ID), à propos. |
 | **Envoyer chiffré** | Depuis le générateur (bouton *Envoyer*), la fiche d'une entrée du coffre ou les réglages : collez le paquet de clés du destinataire, KeyForge produit un message `[[BROCOLIS:v4:…]]` que seul son appareil ouvrira, à envoyer par n'importe quel canal. |
+| **Remplissage automatique** | L'extension *KeyForgeAutoFill* fait de KeyForge un fournisseur d'identifiants d'iOS. Dans Safari et les apps, la barre au-dessus du clavier propose les identifiants du coffre pour le site ; toucher l'un d'eux demande Face ID / Touch ID / le code, puis remplit identifiant et mot de passe. Sinon, une liste (le site en tête, recherche dans tout le coffre). Sur iOS 18 et plus récent, *Remplir → Mots de passe* dans n'importe quel champ insère un secret forgé par le même moteur que l'app. À activer dans *Réglages → Général → Remplissage automatique et mots de passe* (raccourci dans les réglages de KeyForge). |
+| **Vers Mots de passe** | Sur iOS 26 et plus récent, *Réglages → iPhone et Mots de passe → Transférer vers l'app Mots de passe* copie les identifiants du coffre (identifiant, mot de passe, site) dans l'app Mots de passe d'Apple ou un autre gestionnaire, par l'échange d'identifiants d'iOS (format CXF de la FIDO Alliance), après Face ID. Ils sont alors synchronisés par le trousseau iCloud et restent disponibles sans KeyForge. Les notes ne sont pas transférées. |
 | **Recevoir** | Collez un message `[[BROCOLIS:v4:…]]` chiffré pour vous : le secret s'affiche avec l'empreinte de l'expéditeur, à copier ou à ranger dans le coffre. |
 
 Niveaux de robustesse selon l'entropie : moins de 28 bits *Très faible*, moins de 36 *Faible*,
@@ -30,7 +32,12 @@ L'interface est animée en 2D uniquement (ressorts, effets de symboles SF, `phas
 
 - Xcode 16 ou plus récent (le projet utilise les dossiers synchronisés d'Xcode 16 : un fichier
   ajouté dans `KeyForge/` ou `KeyForgeTests/` fait automatiquement partie de la cible) ;
-- iOS 17.0 minimum.
+- iOS 17.0 minimum (insertion d'un secret forgé : iOS 18 ; transfert vers Mots de passe : iOS 26).
+
+Pour un appareil réel, activez dans *Signing & Capabilities*, pour la cible **KeyForge** comme
+pour **KeyForgeAutoFill** : *AutoFill Credential Provider* et *Keychain Sharing* (groupe
+`com.maxlestage.KeyForge.shared`). Les fichiers `KeyForge.entitlements` et
+`KeyForgeAutoFill.entitlements` les déclarent déjà ; la CI compile sans signature.
 
 ## Lancer l'application
 
@@ -81,6 +88,13 @@ ios/
 │   ├── Resources/wordlist-fr.txt    les 1 024 mots (copie de shared/wordlist-fr.txt)
 │   ├── Assets.xcassets          icône 1024 × 1024 et couleur d'accent
 │   └── PrivacyInfo.xcprivacy    manifeste de confidentialité
+├── KeyForgeAutoFill/            extension de remplissage automatique (ASCredentialProviderViewController) :
+│                                liste, Face ID, insertion d'un secret forgé ; elle reprend de KeyForge/
+│                                Core (générateur, coffre, correspondance des sites), le trousseau,
+│                                Face ID et le thème
+├── KeyForge.entitlements        remplissage automatique, trousseau partagé (app)
+├── KeyForgeAutoFill.entitlements remplissage automatique, trousseau partagé (extension)
+├── KeyForgeAutoFill-Info.plist  point d'extension et capacités du fournisseur d'identifiants
 ├── KeyForgeTests/               tests XCTest de la logique
 └── Design/icon.svg              source de l'icône
 ```
@@ -94,6 +108,17 @@ ios/
   `kSecAttrAccessibleWhenUnlockedThisDeviceOnly` : lisible seulement quand l'iPhone est déverrouillé,
   jamais synchronisé dans iCloud ni restauré sur un autre appareil. Les entrées ne sont en mémoire
   que pendant que le coffre est ouvert.
+- **Coffre partagé avec l'extension** : l'élément du coffre vit dans le groupe de trousseau
+  `com.maxlestage.KeyForge.shared`, lisible par l'app et par l'extension de remplissage
+  automatique seulement, toujours `ThisDeviceOnly`. Un coffre d'une version précédente y est
+  déplacé au lancement (nouvelle copie vérifiée avant de supprimer l'ancienne). L'identité
+  post-quantique reste dans le groupe propre à l'app : l'extension ne peut pas la lire.
+- **Remplissage automatique** : iOS ne connaît que le site et le nom d'utilisateur de chaque
+  entrée (pour la barre QuickType) ; le mot de passe ne sort du coffre qu'après Face ID /
+  Touch ID / le code, à chaque remplissage, même si le verrouillage biométrique de l'app est
+  désactivé.
+- **Transfert vers Mots de passe** : seulement à votre demande, après Face ID, par la feuille
+  système d'iOS ; ensuite, les identifiants transférés suivent les règles du trousseau iCloud.
 - **Verrouillage** : Face ID / Touch ID / code de l'appareil (`.deviceOwnerAuthentication`) à
   chaque ouverture si l'option est active (par défaut), verrouillage automatique en arrière-plan.
 - **Presse-papiers** : copies `localOnly` (pas de presse-papiers universel) avec date d'expiration.
