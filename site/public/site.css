@@ -1513,14 +1513,16 @@ a:focus-visible .roll__in > span {
   padding: 0 !important;
   border-radius: 9px;
   background: var(--forge);
-  animation: seg 9s var(--ease) infinite;
+  transition: translate 0.6s var(--ease);
 }
 
-@keyframes seg {
-  0%, 30% { translate: 0 0; }
-  36%, 62% { translate: 100% 0; }
-  68%, 92% { translate: 200% 0; }
-  100% { translate: 0 0; }
+/* L'onglet actif suit le secret affiché (piloté par le bundle WebAssembly). */
+.app-seg[data-step="1"] .app-seg__ink {
+  translate: 100% 0;
+}
+
+.app-seg[data-step="2"] .app-seg__ink {
+  translate: 200% 0;
 }
 
 .app-card {

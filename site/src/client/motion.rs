@@ -376,15 +376,23 @@ fn typewriters() {
 }
 
 /// `[data-scramble]` : un nouveau secret toutes les ~3 s, « déchiffré » lettre à lettre.
-/// Le mode vient de l'attribut (`password`, `passphrase`, `pin`).
+/// Le mode vient de l'attribut (`password`, `passphrase`, `pin`). Avec `cycle` (la
+/// maquette du téléphone), chaque secret passe au mode suivant : l'onglet actif, le
+/// style du secret et la force affichée suivent, pour que l'écran reste cohérent.
 fn scramblers() {
+    const CYCLE: [Mode; 3] = [Mode::Password, Mode::Passphrase, Mode::Pin];
+    let lang = page_lang();
     for el in all("[data-scramble]") {
+        let cycle = el.get_attribute("data-scramble").as_deref() == Some("cycle");
         let mode = match el.get_attribute("data-scramble").as_deref() {
             Some("passphrase") => Mode::Passphrase,
             Some("pin") => Mode::Pin,
             _ => Mode::Password,
         };
-        let options = Options {
+        let password_length = el.get_attribute("data-length").and_then(|v| v.parse().ok());
+        // Le premier secret du cycle reste un mot de passe (l'onglet affiché au départ).
+        let mut step = CYCLE.len() - 1;
+        let mut options = Options {
             mode,
             length: el
                 .get_attribute("data-length")
@@ -402,6 +410,15 @@ fn scramblers() {
             let start = *t0.get_or_insert(now - 2600.0);
             let age = now - start;
             if age > 3200.0 {
+                if cycle {
+                    step = (step + 1) % CYCLE.len();
+                    options.mode = CYCLE[step];
+                    options.length = match options.mode {
+                        Mode::Password => password_length.unwrap_or(options.mode.range().2),
+                        other => other.range().2,
+                    };
+                    show_cycle_step(&el, step, options.mode, options.entropy(), lang);
+                }
                 target = forge::generate(&options, &mut CryptoRng::new())
                     .chars()
                     .collect();
@@ -430,6 +447,31 @@ fn scramblers() {
             el.set_text_content(Some(&text));
             true
         });
+    }
+}
+
+/// L'écran de la maquette pour l'étape `step` : onglet actif, style du secret, force.
+fn show_cycle_step(el: &web_sys::Element, step: usize, mode: Mode, bits: f64, lang: Lang) {
+    let _ = el
+        .class_list()
+        .toggle_with_force("app-secret--phrase", mode == Mode::Passphrase);
+    let Some(screen) = el.closest(".phone__screen").ok().flatten() else {
+        return;
+    };
+    if let Some(seg) = screen.query_selector(".app-seg").ok().flatten() {
+        let _ = seg.set_attribute("data-step", &step.to_string());
+    }
+    let level = forge::Level::of(bits);
+    if let Some(label) = screen.query_selector(".app-level strong").ok().flatten() {
+        label.set_text_content(Some(crate::islands::level_label(lang, level)));
+    }
+    if let Some(value) = screen.query_selector(".app-level span").ok().flatten() {
+        value.set_text_content(Some(&format!(" · {bits:.0} bits")));
+    }
+    if let Some(meter) = screen.query_selector(".app-meter").ok().flatten() {
+        let _ = meter
+            .class_list()
+            .toggle_with_force("app-meter--fair", level.rank() <= 3);
     }
 }
 

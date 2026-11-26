@@ -737,6 +737,14 @@ fn hero(ctx: &Ctx) -> Element {
 /// Le téléphone du héros (2D) : l'écran du générateur joue tout seul.
 fn phone(ctx: &Ctx) -> Element {
     let t = |fr, en| ctx.t(fr, en);
+    // La force affichée est celle du secret de départ (16 caractères, tous les jeux) ;
+    // dans le navigateur, elle suit chaque nouveau secret et l'onglet actif.
+    let bits = Options {
+        mode: Mode::Password,
+        length: 16,
+        ..Options::default()
+    }
+    .entropy();
     div()
         .class("phone-wrap")
         .child(
@@ -755,6 +763,7 @@ fn phone(ctx: &Ctx) -> Element {
                         .child(
                             div()
                                 .class("app-seg")
+                                .attr("data-step", "0")
                                 .child(span().class("app-seg__ink"))
                                 .child(span().text(t("Mot de passe", "Password")))
                                 .child(span().text(t("Phrase", "Phrase")))
@@ -765,7 +774,7 @@ fn phone(ctx: &Ctx) -> Element {
                                 .class("app-card")
                                 .child(
                                     p().class("app-secret")
-                                        .attr("data-scramble", "password")
+                                        .attr("data-scramble", "cycle")
                                         .attr("data-length", "16")
                                         .text(sample(Mode::Password, 16, 7)),
                                 )
@@ -776,8 +785,11 @@ fn phone(ctx: &Ctx) -> Element {
                                 )
                                 .child(
                                     p().class("app-level")
-                                        .child(strong().text(t("Excellente", "Excellent")))
-                                        .child(span().text(" · 104 bits")),
+                                        .child(strong().text(islands::level_label(
+                                            ctx.lang(),
+                                            forge::Level::of(bits),
+                                        )))
+                                        .child(span().text(format!(" · {bits:.0} bits"))),
                                 ),
                         )
                         .child(
