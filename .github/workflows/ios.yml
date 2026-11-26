@@ -108,18 +108,32 @@ jobs:
           limit 120 xcrun simctl boot "$UDID" 2>/dev/null || true
           limit 180 xcrun simctl bootstatus "$UDID" -b || echo "bootstatus : délai dépassé, on continue"
           limit 240 xcrun simctl install "$UDID" "$app"
-          limit 180 xcrun simctl launch "$UDID" com.maxlestage.KeyForge
-          sleep 10
-          # Toujours en vie dix secondes plus tard : pas de plantage au lancement
-          # (migration du coffre, sonde du trousseau, réglages).
-          limit 30 xcrun simctl spawn "$UDID" launchctl list | grep -i "com.maxlestage.KeyForge" \
-            || { echo "KeyForge ne tourne plus après le lancement"; exit 1; }
+          launched=$(limit 180 xcrun simctl launch "$UDID" com.maxlestage.KeyForge)
+          echo "$launched"
+          pid=$(echo "$launched" | awk -F': ' '/com.maxlestage.KeyForge/ {print $2}' | tr -d '[:space:]')
+          test -n "$pid" || { echo "simctl launch n'a pas donné de processus"; exit 1; }
+          sleep 15
+          # Toujours en vie quinze secondes plus tard : pas de plantage au lancement
+          # (migration du coffre, sonde du trousseau, réglages). Les apps du simulateur
+          # sont des processus du Mac : on interroge directement l'hôte, sans dépendre
+          # d'un launchctl lent dans le simulateur.
+          if kill -0 "$pid" 2>/dev/null; then
+            echo "KeyForge tourne toujours (processus $pid)."
+          else
+            echo "KeyForge ne tourne plus après le lancement (processus $pid)."
+            ls -t ~/Library/Logs/DiagnosticReports/KeyForge* 2>/dev/null | head -1 | xargs -r head -c 6000
+            exit 1
+          fi
+          if ls ~/Library/Logs/DiagnosticReports/KeyForge* >/dev/null 2>&1; then
+            echo "::warning::Rapport de plantage KeyForge trouvé :"
+            ls -t ~/Library/Logs/DiagnosticReports/KeyForge* | head -3
+          fi
           mkdir -p "$RUNNER_TEMP/screens"
-          limit 30 xcrun simctl io "$UDID" screenshot "$RUNNER_TEMP/screens/keyforge-launch.png"
+          limit 90 xcrun simctl io "$UDID" screenshot "$RUNNER_TEMP/screens/keyforge-launch.png"
           echo "::endgroup::"
 
           echo "::group::iOS enregistre le fournisseur d'identifiants"
-          limit 30 xcrun simctl spawn "$UDID" pluginkit -m -A -v -p com.apple.authentication-services-credential-provider-ui \
+          limit 90 xcrun simctl spawn "$UDID" pluginkit -m -A -v -p com.apple.authentication-services-credential-provider-ui \
             | tee "$RUNNER_TEMP/plugins.txt" || true
           if grep -q "com.maxlestage.KeyForge.AutoFill" "$RUNNER_TEMP/plugins.txt"; then
             echo "KeyForgeAutoFill est enregistrée par le simulateur."
