@@ -13,7 +13,7 @@ indiquées entre parenthèses.
 | Langue principale | Français |
 | Catégorie principale | Utilitaires |
 | Catégorie secondaire | Productivité |
-| Copyright | `© 2026 Maxime Lestage` |
+| Copyright | `© 2026 Maxime Nathan Lestage` |
 | URL d'assistance | `https://maxlestage.github.io/KEYFORGE/fr/aide/` |
 | URL marketing | `https://maxlestage.github.io/KEYFORGE/fr/` |
 | Politique de confidentialité | `https://maxlestage.github.io/KEYFORGE/fr/confidentialite/` |

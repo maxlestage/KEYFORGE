@@ -15,6 +15,9 @@ struct SettingsView: View {
         return "\(short) (\(build))"
     }
 
+    /// Auteur de KeyForge, affiché dans « À propos » (le même que sur le site).
+    static let author = "Maxime Nathan Lestage"
+
     var body: some View {
         @Bindable var settings = settings
         NavigationStack {
@@ -122,8 +125,13 @@ struct SettingsView: View {
                 }
                 .listRowBackground(Color.surface)
 
-                Section("À propos") {
+                Section {
                     LabeledContent("Version", value: version)
+                    LabeledContent {
+                        Text(Self.author)
+                    } label: {
+                        Label("Créé par", systemImage: "person.fill")
+                    }
                     Label("Aucune donnée ne quitte votre iPhone sans votre accord", systemImage: "iphone.and.arrow.forward")
                         .foregroundStyle(.white)
                     Label("Aucun compte, aucun traceur, aucune publicité", systemImage: "eye.slash.fill")
@@ -137,6 +145,10 @@ struct SettingsView: View {
                     } label: {
                         Label("Revoir la présentation", systemImage: "sparkles")
                     }
+                } header: {
+                    Text("À propos")
+                } footer: {
+                    Text("© 2026 \(Self.author). Tous droits réservés.")
                 }
                 .listRowBackground(Color.surface)
             }
