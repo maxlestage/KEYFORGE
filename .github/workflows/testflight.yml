@@ -5,7 +5,7 @@
 #   ASC_KEY_ID        Key ID de la clé API App Store Connect
 #   ASC_ISSUER_ID     Issuer ID (en haut de la page des clés)
 #   ASC_KEY_P8        contenu du fichier AuthKey_XXXX.p8 (texte complet, BEGIN/END compris)
-#   APPLE_TEAM_ID     Team ID (developer.apple.com → Membership)
+#   APPLE_TEAM_ID     Team ID, facultatif : retrouvé sinon avec la clé API
 #
 # La signature est automatique : avec la clé API, Xcode crée lui-même certificats et
 # profils (clé avec le rôle Admin) et active les capacités des entitlements.
@@ -51,7 +51,8 @@ jobs:
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         run: |
           missing=0
-          for name in ASC_KEY_ID ASC_ISSUER_ID ASC_KEY_P8 APPLE_TEAM_ID; do
+          # APPLE_TEAM_ID est facultatif : sans lui, il est retrouvé avec la clé API.
+          for name in ASC_KEY_ID ASC_ISSUER_ID ASC_KEY_P8; do
             if [ -z "${!name}" ]; then echo "::error::Secret manquant : $name"; missing=1; fi
           done
           exit $missing
@@ -65,11 +66,24 @@ jobs:
           printf '%s\n' "$ASC_KEY_P8" > "$RUNNER_TEMP/keys/AuthKey_${ASC_KEY_ID}.p8"
           chmod 600 "$RUNNER_TEMP/keys/AuthKey_${ASC_KEY_ID}.p8"
 
-      - name: Archive
+      - name: Team ID
         env:
           ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
           ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          team="$APPLE_TEAM_ID"
+          if [ -z "$team" ]; then
+            team=$(python3 Design/asc_team_id.py "$RUNNER_TEMP/keys/AuthKey_${ASC_KEY_ID}.p8" \
+              "$ASC_KEY_ID" "$ASC_ISSUER_ID" com.maxlestage.KeyForge)
+            echo "Team ID retrouvé avec la clé API : $team"
+          fi
+          echo "TEAM_ID=$team" >> "$GITHUB_ENV"
+
+      - name: Archive
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
           VERSION: ${{ inputs.version }}
         run: |
           set -o pipefail
@@ -86,7 +100,7 @@ jobs:
             -authenticationKeyPath "$RUNNER_TEMP/keys/AuthKey_${ASC_KEY_ID}.p8" \
             -authenticationKeyID "$ASC_KEY_ID" \
             -authenticationKeyIssuerID "$ASC_ISSUER_ID" \
-            DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
+            DEVELOPMENT_TEAM="$TEAM_ID" \
             CURRENT_PROJECT_VERSION="$build" \
             "${extra[@]}" \
             archive > "$RUNNER_TEMP/archive.log" 2>&1 \
@@ -97,10 +111,9 @@ jobs:
         env:
           ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
           ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         run: |
           set -o pipefail
-          /usr/libexec/PlistBuddy -c "Add :teamID string $APPLE_TEAM_ID" ExportOptions.plist
+          /usr/libexec/PlistBuddy -c "Add :teamID string $TEAM_ID" ExportOptions.plist
           xcodebuild -exportArchive \
             -archivePath "$RUNNER_TEMP/KeyForge.xcarchive" \
             -exportOptionsPlist ExportOptions.plist \
