@@ -2,6 +2,7 @@
 """Trouve le Team ID avec une clé API App Store Connect (bibliothèque standard + openssl).
 
 Usage : asc_team_id.py <fichier .p8> <key id> <issuer id> [bundle id]
+        asc_team_id.py --app <fichier .p8> <key id> <issuer id> <bundle id>
 
 Signe un jeton ES256, lit les identifiants d'app de l'équipe (GET /v1/bundleIds) et
 affiche leur préfixe d'équipe (« seedId »), qui est le Team ID. Celui du bundle demandé
@@ -56,7 +57,29 @@ def bundle_ids(jwt: str, identifier: str | None) -> list:
         return json.load(response).get("data", [])
 
 
+def app_record(jwt: str, bundle: str) -> dict | None:
+    """La fiche App Store Connect de l'app dont le bundle est `bundle`, ou None."""
+    query = {"filter[bundleId]": bundle, "fields[apps]": "name,bundleId,sku"}
+    url = "https://api.appstoreconnect.apple.com/v1/apps?" + urllib.parse.urlencode(query)
+    request = urllib.request.Request(url, headers={"Authorization": f"Bearer {jwt}"})
+    with urllib.request.urlopen(request, timeout=30) as response:
+        data = json.load(response).get("data", [])
+    return data[0] if data else None
+
+
 def main() -> None:
+    if sys.argv[1] == "--app":
+        # Vérifie que l'app existe dans App Store Connect (sinon l'envoi échoue avec
+        # « Error Downloading App Information »).
+        key_path, key_id, issuer, bundle = sys.argv[2:6]
+        record = app_record(token(key_path, key_id, issuer), bundle)
+        if record is None:
+            sys.exit(
+                f"Aucune app {bundle} dans App Store Connect pour cette clé : créez-la "
+                "(Apps → + → Nouvelle app, identifiant de bundle " + bundle + ")."
+            )
+        print(f"App trouvée : {record['attributes'].get('name')} ({bundle}, id {record['id']})")
+        return
     key_path, key_id, issuer = sys.argv[1:4]
     wanted = sys.argv[4] if len(sys.argv) > 4 else None
     jwt = token(key_path, key_id, issuer)

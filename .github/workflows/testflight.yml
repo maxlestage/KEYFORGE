@@ -80,6 +80,15 @@ jobs:
           fi
           echo "TEAM_ID=$team" >> "$GITHUB_ENV"
 
+      - name: The app exists in App Store Connect
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+        run: |
+          python3 Design/asc_team_id.py --app "$RUNNER_TEMP/keys/AuthKey_${ASC_KEY_ID}.p8" \
+            "$ASC_KEY_ID" "$ASC_ISSUER_ID" com.maxlestage.KeyForge \
+            || { echo "::error::Créez l'app dans App Store Connect (Apps → + → Nouvelle app, bundle com.maxlestage.KeyForge), puis relancez."; exit 1; }
+
       - name: Archive
         env:
           ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
