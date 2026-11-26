@@ -66,6 +66,18 @@ final class GeneratorTests: XCTestCase {
         XCTAssertEqual(parts.filter { $0.last?.isNumber == true }.count, 1)
     }
 
+    func testPassphraseReachesExcellent() {
+        // 20 mots : assez pour le niveau « Excellente » (128 bits et plus).
+        var options = PassphraseOptions()
+        options.wordCount = 20
+        XCTAssertEqual(options.clampedWordCount, 20)
+        let bits = Generator.passphraseEntropy(options, words: .bundled)
+        XCTAssertGreaterThanOrEqual(bits, 128)
+        XCTAssertEqual(StrengthLevel(bits: bits), .excellent)
+        options.wordCount = 99
+        XCTAssertEqual(options.clampedWordCount, 20)
+    }
+
     func testPinIsDigitsOnly() {
         for length in PinOptions.lengthRange {
             let pin = Generator.pin(PinOptions(length: length))

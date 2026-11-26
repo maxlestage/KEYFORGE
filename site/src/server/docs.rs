@@ -762,8 +762,8 @@ fn changelog(l: Lang) -> Doc {
                     t("App", "App"),
                     vec![
                         t(
-                            "Générateur de mots de passe (4 à 128 caractères), phrases de passe (3 à 12 mots) et codes PIN.",
-                            "Password (4 to 128 characters), passphrase (3 to 12 words) and PIN generator.",
+                            "Générateur de mots de passe (4 à 128 caractères), phrases de passe (3 à 20 mots) et codes PIN.",
+                            "Password (4 to 128 characters), passphrase (3 to 20 words) and PIN generator.",
                         ),
                         t(
                             "Coffre dans le Trousseau iOS, verrouillé par Face ID, Touch ID ou le code.",

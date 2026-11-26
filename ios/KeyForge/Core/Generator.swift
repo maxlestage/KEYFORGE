@@ -104,7 +104,7 @@ enum PassphraseSeparator: String, CaseIterable, Codable, Identifiable, Sendable 
 }
 
 struct PassphraseOptions: Codable, Equatable, Sendable {
-    static let wordRange = 3...12
+    static let wordRange = 3...20
 
     var wordCount: Int = 5
     var separator: PassphraseSeparator = .hyphen

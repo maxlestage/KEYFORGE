@@ -2,7 +2,7 @@
 //!
 //! - mots de passe aléatoires (4 à 128 caractères, classes au choix, caractères ambigus
 //!   exclus sur demande, au moins un caractère de chaque classe choisie) ;
-//! - phrases de passe (3 à 12 mots tirés d'une liste de 1 024 mots : 10 bits par mot) ;
+//! - phrases de passe (3 à 20 mots tirés d'une liste de 1 024 mots : 10 bits par mot) ;
 //! - codes PIN (4 à 12 chiffres) ;
 //! - entropie, niveau de robustesse, et analyse d'un mot de passe saisi (motifs, mots de
 //!   passe courants, temps de cassage estimé).
@@ -85,7 +85,7 @@ impl Mode {
     pub fn range(self) -> (u32, u32, u32) {
         match self {
             Mode::Password => (4, 128, 20),
-            Mode::Passphrase => (3, 12, 5),
+            Mode::Passphrase => (3, 20, 5),
             Mode::Pin => (4, 12, 6),
         }
     }
@@ -477,6 +477,19 @@ mod tests {
         assert_eq!(generate(&opts(Mode::Password, 1), &mut rng).len(), 4);
         assert_eq!(generate(&opts(Mode::Password, 999), &mut rng).len(), 128);
         assert_eq!(generate(&opts(Mode::Pin, 2), &mut rng).len(), 4);
+    }
+
+    #[test]
+    fn long_passphrases_reach_excellent() {
+        // 20 mots au plus : assez pour « Excellente » (128 bits et plus) ; au-delà, borné.
+        let mut o = opts(Mode::Passphrase, 20);
+        assert_eq!(o.clamped(), 20);
+        assert!(o.entropy() >= 128.0, "{}", o.entropy());
+        assert_eq!(Level::of(o.entropy()), Level::Excellent);
+        let phrase = generate(&o, &mut Xorshift(7));
+        assert_eq!(phrase.split(o.separator).count(), 20);
+        o.length = 99;
+        assert_eq!(o.clamped(), 20);
     }
 
     #[test]

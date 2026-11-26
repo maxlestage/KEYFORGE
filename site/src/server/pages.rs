@@ -1052,8 +1052,8 @@ fn features(ctx: &Ctx) -> Element {
             "words",
             t("Phrases de passe mémorables", "Memorable passphrases"),
             t(
-                "De 3 à 12 mots tirés parmi 1 024, séparateur au choix, majuscules et chiffre en option. «\u{a0}Galet-Phare7-Sorbet-Lynx-Opale\u{a0}» se retient, et résiste.",
-                "3 to 12 words drawn from 1,024, your choice of separator, optional capitals and digit. “Galet-Phare7-Sorbet-Lynx-Opale” sticks in your head, and holds.",
+                "De 3 à 20 mots tirés parmi 1 024, séparateur au choix, majuscules et chiffre en option. «\u{a0}Galet-Phare7-Sorbet-Lynx-Opale\u{a0}» se retient, et résiste.",
+                "3 to 20 words drawn from 1,024, your choice of separator, optional capitals and digit. “Galet-Phare7-Sorbet-Lynx-Opale” sticks in your head, and holds.",
             ),
             "pink",
         ),
