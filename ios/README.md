@@ -206,6 +206,29 @@ Linux, dans un paquet SwiftPM qui reprend ces fichiers, avec
 sont vérifiés octet pour octet, et des messages échangés dans les deux sens avec la crate Rust
 `brocolis-proto` s'ouvrent de part et d'autre.
 
+## TestFlight
+
+[`.github/workflows/testflight.yml`](../.github/workflows/testflight.yml) archive, signe et
+envoie l'app et son extension sur TestFlight, à la demande (*Actions → TestFlight → Run
+workflow*, avec une version facultative). Le numéro de build augmente à chaque envoi.
+
+Une fois pour toutes :
+
+1. Dans App Store Connect, créez l'app (*Apps → +*), identifiant de bundle
+   `com.maxlestage.KeyForge`.
+2. *Utilisateurs et accès → Intégrations → API App Store Connect → Clés d'équipe → +* :
+   rôle **Admin** (nécessaire pour que Xcode crée certificats et profils). Notez le
+   **Key ID**, l'**Issuer ID** (en haut de la page) et téléchargez le fichier
+   `AuthKey_XXXXXXXXXX.p8` (téléchargeable une seule fois).
+3. Votre **Team ID** : developer.apple.com → *Account → Membership details*.
+4. Dans GitHub, *Settings → Secrets and variables → Actions → New repository secret* :
+   `ASC_KEY_ID`, `ASC_ISSUER_ID`, `ASC_KEY_P8` (tout le texte du fichier `.p8`, lignes
+   `BEGIN`/`END` comprises) et `APPLE_TEAM_ID`.
+
+La signature est automatique : Xcode enregistre les identifiants
+`com.maxlestage.KeyForge` et `com.maxlestage.KeyForge.AutoFill` et active les capacités
+des entitlements (remplissage automatique, partage de trousseau).
+
 ## Intégration continue
 
 [`.github/workflows/ios.yml`](../.github/workflows/ios.yml) compile l'application pour le
