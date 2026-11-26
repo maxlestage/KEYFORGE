@@ -11,7 +11,13 @@ final class IdentityStore {
     private(set) var bundle: BrocolisKeyBundle?
     var errorMessage: String?
 
-    private let keychain = KeychainStore(service: "com.maxlestage.KeyForge.identity", account: "device")
+    // Les clés privées restent dans le groupe propre à l'app : l'extension de remplissage
+    // automatique n'en a pas besoin et ne peut pas les lire.
+    private let keychain = KeychainStore(
+        service: "com.maxlestage.KeyForge.identity",
+        account: "device",
+        privateGroupSuffix: "com.maxlestage.KeyForge"
+    )
 
     init() {
         load()

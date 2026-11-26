@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		4B0F00000000000000000026 /* KeyForgeAutoFill.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 4B0F00000000000000000020 /* KeyForgeAutoFill.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		4B0F00000000000000000010 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -14,22 +18,72 @@
 			remoteGlobalIDString = 4B0F00000000000000000008;
 			remoteInfo = KeyForge;
 		};
+		4B0F00000000000000000028 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4B0F00000000000000000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 4B0F00000000000000000022;
+			remoteInfo = KeyForgeAutoFill;
+		};
 /* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		4B0F00000000000000000027 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				4B0F00000000000000000026 /* KeyForgeAutoFill.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		4B0F00000000000000000004 /* KeyForge.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = KeyForge.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4B0F00000000000000000005 /* KeyForgeTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = KeyForgeTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		4B0F00000000000000000020 /* KeyForgeAutoFill.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = KeyForgeAutoFill.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		4B0F00000000000000000031 /* Exceptions for "KeyForge" folder in "KeyForgeAutoFill" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Core/AutoFillMatch.swift,
+				Core/CrackTime.swift,
+				Core/Entropy.swift,
+				Core/Generator.swift,
+				Core/VaultItem.swift,
+				Core/WordList.swift,
+				Resources/wordlist-fr.txt,
+				Services/AutoFillIdentities.swift,
+				Services/BiometricAuth.swift,
+				Services/KeychainStore.swift,
+				Theme/Theme.swift,
+			);
+			target = 4B0F00000000000000000022 /* KeyForgeAutoFill */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		4B0F00000000000000000006 /* KeyForge */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				4B0F00000000000000000031 /* Exceptions for "KeyForge" folder in "KeyForgeAutoFill" target */,
+			);
 			path = KeyForge;
 			sourceTree = "<group>";
 		};
 		4B0F00000000000000000007 /* KeyForgeTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = KeyForgeTests;
+			sourceTree = "<group>";
+		};
+		4B0F00000000000000000021 /* KeyForgeAutoFill */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = KeyForgeAutoFill;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -49,6 +103,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		4B0F00000000000000000024 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -57,6 +118,7 @@
 			children = (
 				4B0F00000000000000000006 /* KeyForge */,
 				4B0F00000000000000000007 /* KeyForgeTests */,
+				4B0F00000000000000000021 /* KeyForgeAutoFill */,
 				4B0F00000000000000000003 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -66,6 +128,7 @@
 			children = (
 				4B0F00000000000000000004 /* KeyForge.app */,
 				4B0F00000000000000000005 /* KeyForgeTests.xctest */,
+				4B0F00000000000000000020 /* KeyForgeAutoFill.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -80,10 +143,12 @@
 				4B0F0000000000000000000A /* Sources */,
 				4B0F0000000000000000000B /* Frameworks */,
 				4B0F0000000000000000000C /* Resources */,
+				4B0F00000000000000000027 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				4B0F00000000000000000029 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				4B0F00000000000000000006 /* KeyForge */,
@@ -118,6 +183,28 @@
 			productReference = 4B0F00000000000000000005 /* KeyForgeTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
+		4B0F00000000000000000022 /* KeyForgeAutoFill */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4B0F00000000000000000035 /* Build configuration list for PBXNativeTarget "KeyForgeAutoFill" */;
+			buildPhases = (
+				4B0F00000000000000000023 /* Sources */,
+				4B0F00000000000000000024 /* Frameworks */,
+				4B0F00000000000000000025 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				4B0F00000000000000000021 /* KeyForgeAutoFill */,
+			);
+			name = KeyForgeAutoFill;
+			packageProductDependencies = (
+			);
+			productName = KeyForgeAutoFill;
+			productReference = 4B0F00000000000000000020 /* KeyForgeAutoFill.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -134,6 +221,9 @@
 					4B0F00000000000000000009 = {
 						CreatedOnToolsVersion = 16.0;
 						TestTargetID = 4B0F00000000000000000008;
+					};
+					4B0F00000000000000000022 = {
+						CreatedOnToolsVersion = 16.0;
 					};
 				};
 			};
@@ -153,6 +243,7 @@
 			targets = (
 				4B0F00000000000000000008 /* KeyForge */,
 				4B0F00000000000000000009 /* KeyForgeTests */,
+				4B0F00000000000000000022 /* KeyForgeAutoFill */,
 			);
 		};
 /* End PBXProject section */
@@ -166,6 +257,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		4B0F0000000000000000000F /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4B0F00000000000000000025 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -189,6 +287,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		4B0F00000000000000000023 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -196,6 +301,11 @@
 			isa = PBXTargetDependency;
 			target = 4B0F00000000000000000008 /* KeyForge */;
 			targetProxy = 4B0F00000000000000000010 /* PBXContainerItemProxy */;
+		};
+		4B0F00000000000000000029 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 4B0F00000000000000000022 /* KeyForgeAutoFill */;
+			targetProxy = 4B0F00000000000000000028 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -282,6 +392,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = KeyForge.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_PREVIEWS = YES;
@@ -314,6 +425,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = KeyForge.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_PREVIEWS = YES;
@@ -377,6 +489,60 @@
 			};
 			name = Release;
 		};
+		4B0F00000000000000000033 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = KeyForgeAutoFill.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "KeyForgeAutoFill-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = KeyForge;
+				INFOPLIST_KEY_NSFaceIDUsageDescription = "KeyForge utilise Face ID pour déverrouiller votre coffre avant de remplir un mot de passe.";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.maxlestage.KeyForge.AutoFill;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		4B0F00000000000000000034 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = KeyForgeAutoFill.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "KeyForgeAutoFill-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = KeyForge;
+				INFOPLIST_KEY_NSFaceIDUsageDescription = "KeyForge utilise Face ID pour déverrouiller votre coffre avant de remplir un mot de passe.";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.maxlestage.KeyForge.AutoFill;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -403,6 +569,15 @@
 			buildConfigurations = (
 				4B0F00000000000000000019 /* Debug */,
 				4B0F0000000000000000001A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		4B0F00000000000000000035 /* Build configuration list for PBXNativeTarget "KeyForgeAutoFill" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4B0F00000000000000000033 /* Debug */,
+				4B0F00000000000000000034 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

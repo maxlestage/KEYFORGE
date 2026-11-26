@@ -14,6 +14,13 @@ final class VaultStore {
 
     init(keychain: KeychainStore = KeychainStore()) {
         self.keychain = keychain
+        // Le coffre d'une version précédente rejoint le groupe partagé avec l'extension
+        // de remplissage automatique (sans rien perdre si le déplacement échoue).
+        do {
+            try keychain.migrateToDefaultGroup()
+        } catch {
+            errorMessage = error.localizedDescription
+        }
     }
 
     var favorites: [VaultItem] { items.filter(\.isFavorite).sortedForDisplay() }
@@ -126,6 +133,7 @@ final class VaultStore {
         do {
             try keychain.delete()
             items = []
+            AutoFillIdentities.removeAll()
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -149,6 +157,9 @@ final class VaultStore {
     private func write(_ items: [VaultItem]) {
         do {
             try keychain.save(JSONEncoder().encode(items))
+            // Les suggestions au-dessus du clavier suivent le coffre (sites et
+            // identifiants seulement : les mots de passe restent dans le coffre).
+            AutoFillIdentities.sync(items)
         } catch {
             errorMessage = error.localizedDescription
         }

@@ -51,6 +51,8 @@ struct SettingsView: View {
                 }
                 .listRowBackground(Color.surface)
 
+                AutoFillSection()
+
                 Section("Générateur") {
                     Picker(selection: $settings.defaultMode) {
                         ForEach(GeneratorMode.allCases) { mode in
@@ -122,7 +124,7 @@ struct SettingsView: View {
 
                 Section("À propos") {
                     LabeledContent("Version", value: version)
-                    Label("Aucune donnée ne quitte votre iPhone", systemImage: "iphone.and.arrow.forward")
+                    Label("Aucune donnée ne quitte votre iPhone sans votre accord", systemImage: "iphone.and.arrow.forward")
                         .foregroundStyle(.white)
                     Label("Aucun compte, aucun traceur, aucune publicité", systemImage: "eye.slash.fill")
                     if let url = URL(string: "https://github.com/maxlestage/KEYFORGE") {
