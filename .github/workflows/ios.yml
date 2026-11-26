@@ -85,6 +85,53 @@ jobs:
           [ "$status" -eq 0 ] || tail -n 80 "$RUNNER_TEMP/test.log"
           exit $status
 
+      - name: Run on the simulator (app and AutoFill extension)
+        env:
+          UDID: ${{ steps.sim.outputs.udid }}
+        run: |
+          set -euo pipefail
+          app="$RUNNER_TEMP/DerivedData/Build/Products/Debug-iphonesimulator/KeyForge.app"
+          appex="$app/PlugIns/KeyForgeAutoFill.appex"
+          echo "::group::L'extension est embarquée dans l'app"
+          test -d "$appex" || { echo "KeyForgeAutoFill.appex absent de $app/PlugIns"; ls -la "$app"; exit 1; }
+          point=$(/usr/libexec/PlistBuddy -c "Print :NSExtension:NSExtensionPointIdentifier" "$appex/Info.plist")
+          echo "Point d'extension : $point"
+          test "$point" = "com.apple.authentication-services-credential-provider-ui"
+          /usr/libexec/PlistBuddy -c "Print :NSExtension" "$appex/Info.plist"
+          echo "::endgroup::"
+
+          echo "::group::Installation et lancement"
+          xcrun simctl boot "$UDID" 2>/dev/null || true
+          xcrun simctl bootstatus "$UDID" -b
+          xcrun simctl install "$UDID" "$app"
+          xcrun simctl launch "$UDID" com.maxlestage.KeyForge
+          sleep 10
+          # Toujours en vie dix secondes plus tard : pas de plantage au lancement
+          # (migration du coffre, sonde du trousseau, réglages).
+          xcrun simctl spawn "$UDID" launchctl list | grep -i "com.maxlestage.KeyForge" \
+            || { echo "KeyForge ne tourne plus après le lancement"; exit 1; }
+          mkdir -p "$RUNNER_TEMP/screens"
+          xcrun simctl io "$UDID" screenshot "$RUNNER_TEMP/screens/keyforge-launch.png"
+          echo "::endgroup::"
+
+          echo "::group::iOS enregistre le fournisseur d'identifiants"
+          xcrun simctl spawn "$UDID" pluginkit -m -A -v -p com.apple.authentication-services-credential-provider-ui \
+            | tee "$RUNNER_TEMP/plugins.txt" || true
+          if grep -q "com.maxlestage.KeyForge.AutoFill" "$RUNNER_TEMP/plugins.txt"; then
+            echo "KeyForgeAutoFill est enregistrée par le simulateur."
+          else
+            echo "::warning::pluginkit ne liste pas KeyForgeAutoFill (outil absent ou extension refusée)."
+          fi
+          echo "::endgroup::"
+
+      - name: Upload the simulator screenshot
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: KeyForge-simulator
+          path: ${{ runner.temp }}/screens
+          if-no-files-found: ignore
+
       - name: Upload the test results
         if: failure()
         uses: actions/upload-artifact@v5
