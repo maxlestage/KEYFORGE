@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="site/public/icons/icon-192.png" width="96" alt="KeyForge"/>
+<img src="ios/KeyForge/Assets.xcassets/AppIcon.appiconset/AppIcon-1024.png" width="96" alt="KeyForge"/>
 
 # KeyForge
 
