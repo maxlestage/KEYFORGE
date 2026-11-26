@@ -2,36 +2,82 @@ import SwiftUI
 
 // MARK: - Logo
 
-/// The KeyForge mark: a key on an ember gradient, with a breathing glow.
+/// The KeyForge mark, the same as the app icon and the website's logo
+/// (`site/public/assets/logo.svg`): a white key and a spark on a violet → pink → orange
+/// gradient, with a breathing glow.
 struct LogoMark: View {
     var size: CGFloat = 64
     var animated = true
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
+    /// The gradient of the logo (`#7c5cff` → `#ff2e7e` → `#ff8a3d`, bottom left to top right).
+    static let gradient = LinearGradient(
+        stops: [
+            .init(color: Color(hex: 0x7C5CFF), location: 0),
+            .init(color: Color(hex: 0xFF2E7E), location: 0.5),
+            .init(color: Color(hex: 0xFF8A3D), location: 1),
+        ],
+        startPoint: UnitPoint(x: 4 / 60, y: 56 / 60),
+        endPoint: UnitPoint(x: 56 / 60, y: 4 / 60)
+    )
+
     var body: some View {
         ZStack {
-            RoundedRectangle(cornerRadius: size * 0.28, style: .continuous)
-                .fill(Theme.ember)
-            RoundedRectangle(cornerRadius: size * 0.28, style: .continuous)
-                .strokeBorder(.white.opacity(0.25), lineWidth: 1)
-            Image(systemName: "key.horizontal.fill")
-                .font(.system(size: size * 0.42, weight: .bold))
-                .foregroundStyle(.white)
-                .rotationEffect(.degrees(-35))
-                .shadow(color: .black.opacity(0.25), radius: 4, y: 2)
-            Image(systemName: "sparkle")
-                .font(.system(size: size * 0.18, weight: .bold))
-                .foregroundStyle(Color.gold)
-                .offset(x: size * 0.24, y: -size * 0.24)
-                .symbolEffect(.pulse, options: .repeating, isActive: animated && !reduceMotion)
+            RoundedRectangle(cornerRadius: size * 16 / 60, style: .continuous)
+                .fill(Self.gradient)
+            RoundedRectangle(cornerRadius: size * 16 / 60, style: .continuous)
+                .strokeBorder(.white.opacity(0.22), lineWidth: 1)
+            LogoKey()
+                .stroke(.white, style: StrokeStyle(lineWidth: size * 4.5 / 60, lineCap: .round, lineJoin: .round))
+            LogoSpark()
+                .fill(.white)
+                .phaseAnimator(animated && !reduceMotion ? [1.0, 0.55] : [1.0]) { view, opacity in
+                    view.opacity(opacity)
+                } animation: { _ in
+                    .easeInOut(duration: 1.1)
+                }
         }
         .frame(width: size, height: size)
         .phaseAnimator(animated && !reduceMotion ? [false, true] : [false]) { view, glowing in
-            view.shadow(color: .ember.opacity(glowing ? 0.65 : 0.3), radius: glowing ? size * 0.32 : size * 0.18)
+            view.shadow(color: Color(hex: 0xFF2E7E).opacity(glowing ? 0.6 : 0.28), radius: glowing ? size * 0.32 : size * 0.18)
         } animation: { _ in
             .easeInOut(duration: 1.6)
         }
         .accessibilityHidden(true)
+    }
+}
+
+/// Maps the logo's coordinates (the SVG's 2…62 square) into `rect`.
+private func logoPoint(_ x: CGFloat, _ y: CGFloat, in rect: CGRect) -> CGPoint {
+    CGPoint(x: rect.minX + (x - 2) / 60 * rect.width, y: rect.minY + (y - 2) / 60 * rect.height)
+}
+
+/// The key of the logo: its ring, its shaft and its two teeth.
+private struct LogoKey: Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        let center = logoPoint(23, 40, in: rect)
+        let radius = 9 / 60 * rect.width
+        path.addEllipse(in: CGRect(x: center.x - radius, y: center.y - radius, width: radius * 2, height: radius * 2))
+        for (from, to) in [((29.5, 33.5), (46.0, 17.0)), ((40.0, 23.0), (45.0, 28.0)), ((44.5, 18.5), (48.5, 22.5))] {
+            path.move(to: logoPoint(from.0, from.1, in: rect))
+            path.addLine(to: logoPoint(to.0, to.1, in: rect))
+        }
+        return path
+    }
+}
+
+/// The four-pointed spark of the logo.
+private struct LogoSpark: Shape {
+    func path(in rect: CGRect) -> Path {
+        let points: [(CGFloat, CGFloat)] = [
+            (48, 38.5), (49.6, 42.5), (53.6, 44.1), (49.6, 45.7),
+            (48, 49.7), (46.4, 45.7), (42.4, 44.1), (46.4, 42.5),
+        ]
+        var path = Path()
+        path.addLines(points.map { logoPoint($0.0, $0.1, in: rect) })
+        path.closeSubpath()
+        return path
     }
 }
 
