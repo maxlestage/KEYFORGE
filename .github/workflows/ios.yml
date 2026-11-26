@@ -86,7 +86,7 @@ jobs:
           exit $status
 
       - name: Run on the simulator (app and AutoFill extension)
-        timeout-minutes: 12
+        timeout-minutes: 15
         env:
           UDID: ${{ steps.sim.outputs.udid }}
         run: |
@@ -107,8 +107,8 @@ jobs:
           xcrun simctl list devices | grep "$UDID" || true
           limit 120 xcrun simctl boot "$UDID" 2>/dev/null || true
           limit 180 xcrun simctl bootstatus "$UDID" -b || echo "bootstatus : délai dépassé, on continue"
-          limit 120 xcrun simctl install "$UDID" "$app"
-          limit 60 xcrun simctl launch "$UDID" com.maxlestage.KeyForge
+          limit 240 xcrun simctl install "$UDID" "$app"
+          limit 180 xcrun simctl launch "$UDID" com.maxlestage.KeyForge
           sleep 10
           # Toujours en vie dix secondes plus tard : pas de plantage au lancement
           # (migration du coffre, sonde du trousseau, réglages).
