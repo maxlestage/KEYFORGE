@@ -398,6 +398,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = KeyForge;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "© 2026 Maxime Lestage";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSFaceIDUsageDescription = "KeyForge utilise Face ID pour déverrouiller votre coffre de mots de passe.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -431,6 +432,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = KeyForge;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "© 2026 Maxime Lestage";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSFaceIDUsageDescription = "KeyForge utilise Face ID pour déverrouiller votre coffre de mots de passe.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -499,6 +501,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "KeyForgeAutoFill-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = KeyForge;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "© 2026 Maxime Lestage";
 				INFOPLIST_KEY_NSFaceIDUsageDescription = "KeyForge utilise Face ID pour déverrouiller votre coffre avant de remplir un mot de passe.";
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -526,6 +529,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "KeyForgeAutoFill-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = KeyForge;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "© 2026 Maxime Lestage";
 				INFOPLIST_KEY_NSFaceIDUsageDescription = "KeyForge utilise Face ID pour déverrouiller votre coffre avant de remplir un mot de passe.";
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
