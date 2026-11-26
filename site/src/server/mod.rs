@@ -120,6 +120,9 @@ fn robots(req: &Request) -> Response {
 /// L'application, prête à tourner ou à être testée.
 pub fn app() -> App {
     let mut app = App::new();
+    // Brotli ou gzip selon le navigateur : le bundle WebAssembly passe d'environ 660 Kio à
+    // 270 Kio sur le réseau (compressé une seule fois, puis gardé en cache).
+    app.middleware(paquets::vitesse::middleware::compress());
     app.get("/", |req: Request| async move { root(&req) });
     app.get("/sitemap.xml", |req: Request| async move { sitemap(&req) });
     app.get("/robots.txt", |req: Request| async move { robots(&req) });

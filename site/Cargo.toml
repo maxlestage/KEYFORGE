@@ -26,7 +26,8 @@ brocolis-proto = { git = "https://github.com/maxlestage/brocolis" }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 # Pas de base de données : le site n'en a pas besoin (features par défaut désactivées).
-paquets = { git = "https://github.com/maxlestage/Paquets", default-features = false }
+# `compress` : réponses Brotli ou gzip (les fichiers statiques, compressés une fois).
+paquets = { git = "https://github.com/maxlestage/Paquets", default-features = false, features = ["compress"] }
 # L'export statique (GitHub Pages) fait tourner l'app sans serveur.
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 
