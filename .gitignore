@@ -9,3 +9,6 @@ build/
 # Système
 .DS_Store
 .env
+
+# Cache de Python (scripts d'outillage)
+__pycache__/
