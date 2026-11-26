@@ -66,6 +66,14 @@ jobs:
           printf '%s\n' "$ASC_KEY_P8" > "$RUNNER_TEMP/keys/AuthKey_${ASC_KEY_ID}.p8"
           chmod 600 "$RUNNER_TEMP/keys/AuthKey_${ASC_KEY_ID}.p8"
 
+      - name: Register the bundle IDs (app and AutoFill extension)
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+        run: |
+          python3 Design/asc_team_id.py --register "$RUNNER_TEMP/keys/AuthKey_${ASC_KEY_ID}.p8" \
+            "$ASC_KEY_ID" "$ASC_ISSUER_ID"
+
       - name: Team ID
         env:
           ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
