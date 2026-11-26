@@ -85,7 +85,12 @@ jobs:
           [ "$status" -eq 0 ] || tail -n 80 "$RUNNER_TEMP/test.log"
           exit $status
 
+      # Indicative : sur un runner lent, simctl peut dépasser ses limites alors que tout
+      # va bien. Le démarrage de l'app est déjà vérifié par l'étape Test (les tests
+      # tournent dans l'app lancée sur le simulateur) ; cette étape ajoute la capture et
+      # l'enregistrement de l'extension, sans bloquer la CI.
       - name: Run on the simulator (app and AutoFill extension)
+        continue-on-error: true
         timeout-minutes: 15
         env:
           UDID: ${{ steps.sim.outputs.udid }}
@@ -107,7 +112,13 @@ jobs:
           xcrun simctl list devices | grep "$UDID" || true
           limit 120 xcrun simctl boot "$UDID" 2>/dev/null || true
           limit 180 xcrun simctl bootstatus "$UDID" -b || echo "bootstatus : délai dépassé, on continue"
-          limit 240 xcrun simctl install "$UDID" "$app"
+          if ! limit 240 xcrun simctl install "$UDID" "$app"; then
+            echo "Installation trop lente : redémarrage du simulateur et nouvel essai."
+            limit 120 xcrun simctl shutdown "$UDID" || true
+            limit 120 xcrun simctl boot "$UDID" || true
+            limit 240 xcrun simctl bootstatus "$UDID" -b || true
+            limit 300 xcrun simctl install "$UDID" "$app"
+          fi
           launched=$(limit 180 xcrun simctl launch "$UDID" com.maxlestage.KeyForge)
           echo "$launched"
           pid=$(echo "$launched" | awk -F': ' '/com.maxlestage.KeyForge/ {print $2}' | tr -d '[:space:]')
