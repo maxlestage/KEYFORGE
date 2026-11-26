@@ -25,13 +25,81 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # Côté App Store Connect, sans Xcode : sur Ubuntu, il démarre tout de suite au lieu
+  # d'attendre un runner macOS, et arrête tout avant l'archive s'il manque quelque chose.
+  prepare:
+    name: App Store Connect (bundle IDs, Team ID, app)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      team: ${{ steps.team.outputs.team }}
+    defaults:
+      run:
+        working-directory: ios
+    env:
+      ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+      ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Check the secrets
+        env:
+          ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
+        run: |
+          missing=0
+          # APPLE_TEAM_ID est facultatif : sans lui, il est retrouvé avec la clé API.
+          for name in ASC_KEY_ID ASC_ISSUER_ID ASC_KEY_P8; do
+            if [ -z "${!name}" ]; then echo "::error::Secret manquant : $name"; missing=1; fi
+          done
+          exit $missing
+
+      - name: Install the API key
+        env:
+          ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/keys"
+          printf '%s\n' "$ASC_KEY_P8" > "$RUNNER_TEMP/keys/AuthKey_${ASC_KEY_ID}.p8"
+          chmod 600 "$RUNNER_TEMP/keys/AuthKey_${ASC_KEY_ID}.p8"
+
+      - name: Register the bundle IDs (app and AutoFill extension)
+        run: |
+          python3 Design/asc_team_id.py --register "$RUNNER_TEMP/keys/AuthKey_${ASC_KEY_ID}.p8" \
+            "$ASC_KEY_ID" "$ASC_ISSUER_ID"
+
+      - name: Team ID
+        id: team
+        env:
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          team="$APPLE_TEAM_ID"
+          if [ -z "$team" ]; then
+            team=$(python3 Design/asc_team_id.py "$RUNNER_TEMP/keys/AuthKey_${ASC_KEY_ID}.p8" \
+              "$ASC_KEY_ID" "$ASC_ISSUER_ID" com.maxlestage.KeyForge)
+            echo "Team ID retrouvé avec la clé API : $team"
+          fi
+          echo "team=$team" >> "$GITHUB_OUTPUT"
+
+      - name: The app exists in App Store Connect
+        run: |
+          python3 Design/asc_team_id.py --app "$RUNNER_TEMP/keys/AuthKey_${ASC_KEY_ID}.p8" \
+            "$ASC_KEY_ID" "$ASC_ISSUER_ID" com.maxlestage.KeyForge \
+            || { echo "::error::Créez l'app dans App Store Connect (Apps → + → Nouvelle app, bundle com.maxlestage.KeyForge), puis relancez."; exit 1; }
+
+      - name: Remove the API key
+        if: always()
+        run: rm -rf "$RUNNER_TEMP/keys"
+
   upload:
     name: Archive and upload to TestFlight
+    needs: prepare
     runs-on: macos-15
     timeout-minutes: 60
     defaults:
       run:
         working-directory: ios
+    env:
+      # Un Team ID venu du secret n'est pas transmis entre jobs : on le relit alors ici.
+      TEAM_ID: ${{ needs.prepare.outputs.team || secrets.APPLE_TEAM_ID }}
     steps:
       - uses: actions/checkout@v5
 
@@ -43,20 +111,6 @@ jobs:
           sudo xcode-select -s "$xcode/Contents/Developer"
           xcodebuild -version
 
-      - name: Check the secrets
-        env:
-          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
-          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
-          ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-        run: |
-          missing=0
-          # APPLE_TEAM_ID est facultatif : sans lui, il est retrouvé avec la clé API.
-          for name in ASC_KEY_ID ASC_ISSUER_ID ASC_KEY_P8; do
-            if [ -z "${!name}" ]; then echo "::error::Secret manquant : $name"; missing=1; fi
-          done
-          exit $missing
-
       - name: Install the API key
         env:
           ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
@@ -65,37 +119,6 @@ jobs:
           mkdir -p "$RUNNER_TEMP/keys"
           printf '%s\n' "$ASC_KEY_P8" > "$RUNNER_TEMP/keys/AuthKey_${ASC_KEY_ID}.p8"
           chmod 600 "$RUNNER_TEMP/keys/AuthKey_${ASC_KEY_ID}.p8"
-
-      - name: Register the bundle IDs (app and AutoFill extension)
-        env:
-          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
-          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
-        run: |
-          python3 Design/asc_team_id.py --register "$RUNNER_TEMP/keys/AuthKey_${ASC_KEY_ID}.p8" \
-            "$ASC_KEY_ID" "$ASC_ISSUER_ID"
-
-      - name: Team ID
-        env:
-          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
-          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-        run: |
-          team="$APPLE_TEAM_ID"
-          if [ -z "$team" ]; then
-            team=$(python3 Design/asc_team_id.py "$RUNNER_TEMP/keys/AuthKey_${ASC_KEY_ID}.p8" \
-              "$ASC_KEY_ID" "$ASC_ISSUER_ID" com.maxlestage.KeyForge)
-            echo "Team ID retrouvé avec la clé API : $team"
-          fi
-          echo "TEAM_ID=$team" >> "$GITHUB_ENV"
-
-      - name: The app exists in App Store Connect
-        env:
-          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
-          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
-        run: |
-          python3 Design/asc_team_id.py --app "$RUNNER_TEMP/keys/AuthKey_${ASC_KEY_ID}.p8" \
-            "$ASC_KEY_ID" "$ASC_ISSUER_ID" com.maxlestage.KeyForge \
-            || { echo "::error::Créez l'app dans App Store Connect (Apps → + → Nouvelle app, bundle com.maxlestage.KeyForge), puis relancez."; exit 1; }
 
       - name: Archive
         env:
