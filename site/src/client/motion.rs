@@ -603,24 +603,40 @@ fn copy_buttons() {
 }
 
 /// Le menu mobile, et le bouton « haut de page ».
+/// Ouvre ou ferme le menu plein écran. La classe de la page et `aria-expanded` des
+/// boutons changent toujours ensemble : un lecteur d'écran n'annonce jamais « développé »
+/// pour un menu fermé (par un lien, Échap ou le bouton).
+fn set_menu(html: &HtmlElement, open: bool) {
+    let _ = html.class_list().toggle_with_force("menu-open", open);
+    for button in all("[data-toggle-menu]") {
+        let _ = button.set_attribute("aria-expanded", if open { "true" } else { "false" });
+    }
+}
+
 fn menus(html: &HtmlElement) {
     for button in all("[data-toggle-menu]") {
-        let (html, target) = (html.clone(), button.clone());
+        let html = html.clone();
         on(&button, "click", move |_: web_sys::Event| {
-            let open = html.class_list().toggle("menu-open").unwrap_or(false);
-            let _ = target.set_attribute("aria-expanded", if open { "true" } else { "false" });
+            let open = !html.class_list().contains("menu-open");
+            set_menu(&html, open);
         });
     }
     for el in all(".menu a") {
         let html = html.clone();
         on(&el, "click", move |_: web_sys::Event| {
-            let _ = html.class_list().remove_1("menu-open");
+            set_menu(&html, false)
         });
     }
     let html_key = html.clone();
     on(&window(), "keydown", move |e: web_sys::KeyboardEvent| {
-        if e.key() == "Escape" {
-            let _ = html_key.class_list().remove_1("menu-open");
+        if e.key() == "Escape" && html_key.class_list().contains("menu-open") {
+            set_menu(&html_key, false);
+            // Le focus revient au bouton qui a ouvert le menu.
+            if let Some(button) = all("[data-toggle-menu]").into_iter().next()
+                && let Ok(button) = button.dyn_into::<HtmlElement>()
+            {
+                let _ = button.focus();
+            }
         }
     });
     for el in all("[data-top]") {
