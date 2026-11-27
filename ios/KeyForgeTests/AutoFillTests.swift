@@ -48,4 +48,57 @@ final class AutoFillTests: XCTestCase {
         XCTAssertEqual(identities.first?.user, "max")
         XCTAssertEqual(identities.first?.recordIdentifier, items[0].id.uuidString)
     }
+
+    // MARK: Enregistrer un identifiant (iOS 26.2)
+
+    private var saved: [VaultItem] {
+        [
+            VaultItem(title: "Banque", username: "Moi@exemple.fr", website: "https://www.banque.fr/login", password: "ancien"),
+            VaultItem(title: "Banque pro", username: "pro", website: "banque.fr", password: "p"),
+            VaultItem(title: "Forum", username: "", website: "forum.example", password: "f"),
+        ]
+    }
+
+    func testSaveUpdatesTheMatchingEntry() throws {
+        let items = saved
+        XCTAssertEqual(
+            VaultSave.plan(service: "banque.fr", user: "moi@exemple.fr", password: "ancien", title: nil, in: items),
+            .unchanged
+        )
+        let plan = VaultSave.plan(service: "https://banque.fr/x", user: " moi@exemple.fr ", password: "neuf", title: nil, in: items)
+        guard case .update(let updated) = plan else { return XCTFail("mise à jour attendue") }
+        XCTAssertEqual(updated.id, items[0].id)
+        XCTAssertEqual(updated.password, "neuf")
+        XCTAssertEqual(updated.title, "Banque")
+        let applied = VaultSave.apply(plan, to: items)
+        XCTAssertEqual(applied.count, 3)
+        XCTAssertEqual(applied[0].password, "neuf")
+        XCTAssertEqual(applied[1], items[1])
+    }
+
+    func testSaveAddsANewEntry() throws {
+        let items = saved
+        let plan = VaultSave.plan(service: "banque.fr", user: "nouveau", password: "x", title: " Ma banque ", in: items)
+        guard case .add(let added) = plan else { return XCTFail("ajout attendu") }
+        XCTAssertEqual(added.title, "Ma banque")
+        XCTAssertEqual(added.username, "nouveau")
+        XCTAssertEqual(added.website, "banque.fr")
+        XCTAssertEqual(VaultSave.apply(plan, to: items).count, 4)
+        // Un sous-domaine n'est pas le même site : jamais d'écrasement par ressemblance.
+        guard case .add = VaultSave.plan(service: "secure.banque.fr", user: "moi@exemple.fr", password: "z", title: nil, in: items)
+        else { return XCTFail("ajout attendu pour un autre hôte") }
+    }
+
+    func testSaveWithoutUserName() throws {
+        let items = saved
+        // L'unique entrée du site est mise à jour…
+        guard case .update(let updated) = VaultSave.plan(service: "forum.example", user: "", password: "g", title: nil, in: items)
+        else { return XCTFail("mise à jour attendue") }
+        XCTAssertEqual(updated.id, items[2].id)
+        // …mais entre plusieurs entrées, on n'en choisit pas une au hasard.
+        guard case .add(let added) = VaultSave.plan(service: "banque.fr", user: "", password: "g", title: nil, in: items)
+        else { return XCTFail("ajout attendu") }
+        XCTAssertEqual(added.title, "banque.fr")
+        XCTAssertEqual(VaultSave.plan(service: "banque.fr", user: "x", password: "", title: nil, in: items), .unchanged)
+    }
 }

@@ -29,12 +29,18 @@ struct AutoFillRootView: View {
                 .navigationBarTitleDisplayMode(.inline)
         case .configuration:
             ConfiguredView { model.onConfigured?() }
-        case .list, .single, .codes, .singleCode:
+        case .list, .single, .codes, .singleCode, .save:
             switch model.phase {
             case .ready:
-                CredentialListView(model: model)
-                    .navigationTitle(model.siteName ?? (model.wantsCode ? "Codes de validation" : "KeyForge"))
-                    .navigationBarTitleDisplayMode(.inline)
+                if case .save(let draft) = model.request {
+                    SaveView(model: model, draft: draft)
+                        .navigationTitle("KeyForge")
+                        .navigationBarTitleDisplayMode(.inline)
+                } else {
+                    CredentialListView(model: model)
+                        .navigationTitle(model.siteName ?? (model.wantsCode ? "Codes de validation" : "KeyForge"))
+                        .navigationBarTitleDisplayMode(.inline)
+                }
             case .failed(let message):
                 MessageView(symbol: "exclamationmark.triangle.fill", title: "Coffre indisponible", message: message)
             case .locked, .unlocking:
@@ -171,6 +177,69 @@ private struct CredentialListView: View {
         .listRowBackground(Color.surface)
         .accessibilityLabel("\(item.title), \(item.username)")
         .accessibilityHint(model.wantsCode ? "Remplit le code de validation" : "Remplit cet identifiant et son mot de passe")
+    }
+}
+
+// MARK: Enregistrer
+
+/// La confirmation d'un enregistrement demandé par iOS : ce qui sera ajouté ou remplacé.
+private struct SaveView: View {
+    let model: AutoFillModel
+    let draft: SaveDraft
+
+    private var updated: VaultItem? {
+        if case .update(let item) = model.savePlan { return item }
+        return nil
+    }
+
+    var body: some View {
+        VStack(spacing: 20) {
+            Spacer()
+            Image(systemName: updated == nil ? "tray.and.arrow.down.fill" : "arrow.triangle.2.circlepath")
+                .font(.system(size: 50, weight: .semibold))
+                .foregroundStyle(Theme.ember)
+            Text(updated == nil ? "Enregistrer dans KeyForge ?" : "Mettre à jour dans KeyForge ?")
+                .font(.title3.bold())
+            VStack(alignment: .leading, spacing: 12) {
+                line("Site", AutoFillMatch.host(of: draft.service), symbol: "globe")
+                if !draft.user.isEmpty {
+                    line("Identifiant", draft.user, symbol: "person.fill")
+                }
+                line("Mot de passe", String(repeating: "•", count: min(draft.password.count, 20)), symbol: "key.fill")
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .forgeCard()
+            if let updated {
+                Text("Le mot de passe de « \(updated.title) » sera remplacé par celui-ci.")
+                    .font(.footnote)
+                    .foregroundStyle(Color.textSecondary)
+                    .multilineTextAlignment(.center)
+            }
+            Button {
+                model.confirmSave()
+            } label: {
+                Label(updated == nil ? "Enregistrer" : "Mettre à jour", systemImage: "lock.shield.fill")
+                    .font(.headline)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 14)
+                    .background(Theme.ember, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+                    .foregroundStyle(.white)
+            }
+            Button("Ne pas enregistrer") { model.onCancel?() }
+                .foregroundStyle(Color.textSecondary)
+            Spacer()
+        }
+        .padding(20)
+    }
+
+    private func line(_ title: String, _ value: String, symbol: String) -> some View {
+        HStack(spacing: 12) {
+            Image(systemName: symbol).foregroundStyle(Color.ember).frame(width: 22)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title).font(.caption.weight(.semibold)).foregroundStyle(Color.textSecondary)
+                Text(value).foregroundStyle(.white).lineLimit(1).truncationMode(.middle)
+            }
+        }
     }
 }
 

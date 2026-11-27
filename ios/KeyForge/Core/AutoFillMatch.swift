@@ -60,3 +60,59 @@ enum AutoFillMatch {
         return name.isEmpty ? item.title : name
     }
 }
+
+/// Ce qu'il faut faire d'un identifiant qu'iOS demande d'enregistrer (après une
+/// inscription ou un changement de mot de passe dans Safari ou une app).
+enum VaultSave {
+    enum Plan: Equatable {
+        /// Déjà dans le coffre, avec ce mot de passe : rien à faire.
+        case unchanged
+        /// Une nouvelle entrée.
+        case add(VaultItem)
+        /// L'entrée existante, avec le nouveau mot de passe.
+        case update(VaultItem)
+    }
+
+    /// Cherche l'entrée du même site et du même identifiant. Sans identifiant, l'unique
+    /// entrée du site ; s'il y en a plusieurs, une nouvelle entrée plutôt qu'un choix au
+    /// hasard.
+    static func plan(
+        service: String, user: String, password: String, title: String?,
+        in items: [VaultItem], now: Date = Date()
+    ) -> Plan {
+        guard !password.isEmpty else { return .unchanged }
+        let host = AutoFillMatch.host(of: service)
+        let name = user.trimmingCharacters(in: .whitespacesAndNewlines)
+        let sameSite = host.isEmpty ? [] : items.filter { AutoFillMatch.score($0, hosts: [host]) == 2 }
+        let match: VaultItem?
+        if name.isEmpty {
+            match = sameSite.count == 1 ? sameSite[0] : nil
+        } else {
+            match = sameSite.first { $0.username.trimmingCharacters(in: .whitespaces).caseInsensitiveCompare(name) == .orderedSame }
+        }
+        if var existing = match {
+            guard existing.password != password else { return .unchanged }
+            existing.password = password
+            existing.updatedAt = now
+            return .update(existing)
+        }
+        let label = title?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        return .add(VaultItem(
+            title: label.isEmpty ? (host.isEmpty ? "Sans titre" : host) : label,
+            username: name, website: host, password: password,
+            createdAt: now, updatedAt: now
+        ))
+    }
+
+    /// Le coffre une fois le plan appliqué.
+    static func apply(_ plan: Plan, to items: [VaultItem]) -> [VaultItem] {
+        switch plan {
+        case .unchanged:
+            return items
+        case .add(let item):
+            return items + [item]
+        case .update(let item):
+            return items.map { $0.id == item.id ? item : $0 }
+        }
+    }
+}

@@ -17,6 +17,7 @@ final class CredentialProviderViewController: ASCredentialProviderViewController
         model.onSelectCode = { [weak self] code in self?.complete(withCode: code) }
         model.onCancel = { [weak self] in self?.cancel(.userCanceled) }
         model.onInsert = { [weak self] text in self?.insert(text) }
+        model.onSaved = { [weak self] in self?.completeSave() }
         model.onConfigured = { [weak self] in
             self?.extensionContext.completeExtensionConfigurationRequest()
         }
@@ -75,7 +76,53 @@ final class CredentialProviderViewController: ASCredentialProviderViewController
         model.start(.configuration)
     }
 
+    // MARK: Enregistrer (iOS 26.2 et plus récent)
+
+    #if compiler(>=6.2.3)
+    /// Après une inscription ou un changement de mot de passe, iOS propose d'enregistrer
+    /// l'identifiant dans KeyForge. Sans interface quand c'est possible ; sinon iOS
+    /// ouvre la confirmation ci-dessous, après Face ID.
+    @available(iOS 26.2, *)
+    override func performWithoutUserInteractionIfPossible(savePasswordRequest: ASSavePasswordRequest) {
+        let event = savePasswordRequest.event
+        if model.saveSilently(draft(of: savePasswordRequest), mayOverwrite: event == .userInitiated) {
+            extensionContext.completeSavePasswordRequest(completionHandler: nil)
+        } else if event == .generatedPasswordFilled {
+            // Le formulaire n'est pas encore validé : pas d'interface maintenant, iOS
+            // redemande l'enregistrement quand il l'est.
+            cancel(.failed)
+        } else {
+            cancel(.userInteractionRequired)
+        }
+    }
+
+    @available(iOS 26.2, *)
+    override func prepareInterface(for savePasswordRequest: ASSavePasswordRequest) {
+        model.start(.save(draft(of: savePasswordRequest)))
+    }
+
+    @available(iOS 26.2, *)
+    private func draft(of request: ASSavePasswordRequest) -> SaveDraft {
+        SaveDraft(
+            service: request.serviceIdentifier.identifier,
+            user: request.credential.user,
+            password: request.credential.password,
+            title: request.title
+        )
+    }
+    #endif
+
     // MARK: Réponses
+
+    private func completeSave() {
+        #if compiler(>=6.2.3)
+        if #available(iOS 26.2, *) {
+            extensionContext.completeSavePasswordRequest(completionHandler: nil)
+            return
+        }
+        #endif
+        cancel(.userCanceled)
+    }
 
     private func complete(with item: VaultItem) {
         let credential = ASPasswordCredential(user: AutoFillMatch.user(of: item), password: item.password)

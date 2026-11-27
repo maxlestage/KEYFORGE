@@ -2,6 +2,14 @@ import Foundation
 import LocalAuthentication
 import Observation
 
+/// Un identifiant qu'iOS demande d'enregistrer dans KeyForge (iOS 26.2 et plus récent).
+struct SaveDraft: Equatable {
+    var service: String
+    var user: String
+    var password: String
+    var title: String?
+}
+
 /// L'état de l'extension : ce qu'iOS a demandé, le verrou, les entrées du coffre.
 @MainActor
 @Observable
@@ -15,6 +23,8 @@ final class AutoFillModel {
         case codes([String])
         /// Le code d'une entrée précise, depuis la barre QuickType.
         case singleCode(String?)
+        /// Enregistrer un identifiant saisi dans Safari ou une app (iOS 26.2+).
+        case save(SaveDraft)
         /// Insérer un secret forgé dans le champ (iOS 18+).
         case insertText
         /// KeyForge vient d'être activé comme fournisseur de remplissage automatique.
@@ -38,6 +48,13 @@ final class AutoFillModel {
     var onCancel: (() -> Void)?
     var onInsert: ((String) -> Void)?
     var onConfigured: (() -> Void)?
+    var onSaved: (() -> Void)?
+
+    /// Ce que l'enregistrement demandé changera dans le coffre.
+    private(set) var savePlan: VaultSave.Plan = .unchanged
+    /// La clé et le contexte qui ont ouvert le coffre, pour le sceller à nouveau.
+    private var openedKey: [UInt8]?
+    private var openedContext: LAContext?
 
     /// Le coffre scellé par Brocolis 🥦, déchiffré ici après Face ID.
     private let store = BrocolisVault()
@@ -90,7 +107,7 @@ final class AutoFillModel {
         case .configuration:
             phase = .ready
             Task { await syncIdentities() }
-        case .list, .single, .codes, .singleCode:
+        case .list, .single, .codes, .singleCode, .save:
             Task { await unlock() }
         }
     }
@@ -125,6 +142,14 @@ final class AutoFillModel {
             // L'entrée n'a plus de code : la liste des codes à la place.
             request = .codes([])
         }
+        if case .save(let draft) = request {
+            savePlan = plan(for: draft, in: items)
+            if savePlan == .unchanged {
+                // Déjà dans le coffre avec ce mot de passe : rien à confirmer.
+                onSaved?()
+                return
+            }
+        }
         phase = .ready
     }
 
@@ -143,10 +168,52 @@ final class AutoFillModel {
         }
     }
 
+    // MARK: Enregistrer
+
+    private func plan(for draft: SaveDraft, in items: [VaultItem]) -> VaultSave.Plan {
+        VaultSave.plan(
+            service: draft.service, user: draft.user, password: draft.password, title: draft.title, in: items
+        )
+    }
+
+    /// Enregistre sans rien afficher quand c'est possible : la clé du coffre est dans le
+    /// trousseau (verrouillage biométrique coupé) et il n'y a pas de mot de passe à
+    /// remplacer sans l'accord du propriétaire. `false` : l'interface est nécessaire.
+    func saveSilently(_ draft: SaveDraft, mayOverwrite: Bool) -> Bool {
+        guard !store.isEnclaveProtected(), let opened = try? store.open(context: nil) else { return false }
+        let plan = plan(for: draft, in: opened.items)
+        if plan == .unchanged { return true }
+        if case .update = plan, !mayOverwrite { return false }
+        return write(plan, to: opened.items, key: opened.key, context: nil)
+    }
+
+    /// Le propriétaire a confirmé : le coffre est scellé à nouveau avec l'identifiant.
+    func confirmSave() {
+        if write(savePlan, to: items, key: openedKey, context: openedContext) {
+            onSaved?()
+        }
+    }
+
+    private func write(_ plan: VaultSave.Plan, to items: [VaultItem], key: [UInt8]?, context: LAContext?) -> Bool {
+        let updated = VaultSave.apply(plan, to: items)
+        do {
+            try store.save(updated, key: key, context: context)
+            // iOS proposera aussitôt ce nouvel identifiant au-dessus du clavier.
+            AutoFillIdentities.sync(updated)
+            return true
+        } catch {
+            phase = .failed("L'identifiant n'a pas pu être enregistré : \(error.localizedDescription)")
+            return false
+        }
+    }
+
     @discardableResult
     private func load(_ context: LAContext) -> Bool {
         do {
-            items = try store.open(context: context).items
+            let opened = try store.open(context: context)
+            items = opened.items
+            openedKey = opened.key
+            openedContext = context
             return true
         } catch {
             phase = .failed("Le coffre est illisible : \(error.localizedDescription)")
