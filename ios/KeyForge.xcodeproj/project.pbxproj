@@ -63,6 +63,7 @@
 				Core/Keccak.swift,
 				Core/MLKEM.swift,
 				Core/SHA256.swift,
+				Core/TOTP.swift,
 				Core/VaultItem.swift,
 				Core/VaultSeal.swift,
 				Core/WordList.swift,
@@ -409,9 +410,11 @@
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "KeyForge-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = KeyForge;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "© 2026 Maxime Nathan Lestage";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
+				INFOPLIST_KEY_NSCameraUsageDescription = "KeyForge utilise l'appareil photo pour scanner le QR code d'un code de validation.";
 				INFOPLIST_KEY_NSFaceIDUsageDescription = "KeyForge utilise Face ID pour déverrouiller votre coffre de mots de passe.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -443,9 +446,11 @@
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "KeyForge-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = KeyForge;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "© 2026 Maxime Nathan Lestage";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
+				INFOPLIST_KEY_NSCameraUsageDescription = "KeyForge utilise l'appareil photo pour scanner le QR code d'un code de validation.";
 				INFOPLIST_KEY_NSFaceIDUsageDescription = "KeyForge utilise Face ID pour déverrouiller votre coffre de mots de passe.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;

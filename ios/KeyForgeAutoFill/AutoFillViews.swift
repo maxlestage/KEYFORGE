@@ -29,11 +29,11 @@ struct AutoFillRootView: View {
                 .navigationBarTitleDisplayMode(.inline)
         case .configuration:
             ConfiguredView { model.onConfigured?() }
-        case .list, .single:
+        case .list, .single, .codes, .singleCode:
             switch model.phase {
             case .ready:
                 CredentialListView(model: model)
-                    .navigationTitle(model.siteName ?? "KeyForge")
+                    .navigationTitle(model.siteName ?? (model.wantsCode ? "Codes de validation" : "KeyForge"))
                     .navigationBarTitleDisplayMode(.inline)
             case .failed(let message):
                 MessageView(symbol: "exclamationmark.triangle.fill", title: "Coffre indisponible", message: message)
@@ -61,7 +61,7 @@ private struct LockedView: View {
                 .symbolEffect(.pulse, isActive: isUnlocking)
             Text("Coffre KeyForge verrouillé")
                 .font(.title3.bold())
-            Text("Déverrouillez-le pour remplir cet identifiant.")
+            Text("Déverrouillez-le pour remplir ce champ.")
                 .font(.subheadline)
                 .foregroundStyle(Color.textSecondary)
                 .multilineTextAlignment(.center)
@@ -96,7 +96,9 @@ private struct CredentialListView: View {
                 }
             }
             if !sections.others.isEmpty {
-                Section(sections.suggested.isEmpty ? "Votre coffre" : "Autres identifiants") {
+                Section(sections.suggested.isEmpty
+                    ? (model.wantsCode ? "Vos codes de validation" : "Votre coffre")
+                    : (model.wantsCode ? "Autres codes" : "Autres identifiants")) {
                     ForEach(sections.others) { row($0) }
                 }
             }
@@ -105,20 +107,28 @@ private struct CredentialListView: View {
         .searchable(text: $model.search, prompt: "Rechercher dans le coffre")
         .overlay {
             if sections.suggested.isEmpty && sections.others.isEmpty {
-                MessageView(
-                    symbol: model.items.isEmpty ? "tray" : "magnifyingglass",
-                    title: model.items.isEmpty ? "Coffre vide" : "Aucun résultat",
-                    message: model.items.isEmpty
-                        ? "Enregistrez vos identifiants dans l'app KeyForge : ils apparaîtront ici."
-                        : "Aucune entrée ne correspond à « \(model.search) »."
-                )
+                if model.wantsCode && model.search.isEmpty {
+                    MessageView(
+                        symbol: "clock.badge.checkmark",
+                        title: "Aucun code de validation",
+                        message: "Ajoutez un code de validation à une entrée dans l'app KeyForge : il apparaîtra ici."
+                    )
+                } else {
+                    MessageView(
+                        symbol: model.items.isEmpty ? "tray" : "magnifyingglass",
+                        title: model.items.isEmpty ? "Coffre vide" : "Aucun résultat",
+                        message: model.items.isEmpty
+                            ? "Enregistrez vos identifiants dans l'app KeyForge : ils apparaîtront ici."
+                            : "Aucune entrée ne correspond à « \(model.search) »."
+                    )
+                }
             }
         }
     }
 
     private func row(_ item: VaultItem) -> some View {
         Button {
-            model.onSelect?(item)
+            model.choose(item)
         } label: {
             HStack(spacing: 14) {
                 Text(item.initial)
@@ -143,14 +153,24 @@ private struct CredentialListView: View {
                 }
                 .lineLimit(1)
                 Spacer()
-                Image(systemName: "key.fill")
-                    .foregroundStyle(Color.ember)
+                if model.wantsCode, let generator = item.oneTimeCode {
+                    // Le code du moment, rafraîchi chaque seconde.
+                    TimelineView(.periodic(from: .now, by: 1)) { timeline in
+                        Text(generator.displayCode(at: timeline.date))
+                            .font(.system(.body, design: .monospaced).weight(.semibold))
+                            .foregroundStyle(Color.gold)
+                            .contentTransition(.numericText())
+                    }
+                } else {
+                    Image(systemName: "key.fill")
+                        .foregroundStyle(Color.ember)
+                }
             }
             .contentShape(Rectangle())
         }
         .listRowBackground(Color.surface)
         .accessibilityLabel("\(item.title), \(item.username)")
-        .accessibilityHint("Remplit cet identifiant et son mot de passe")
+        .accessibilityHint(model.wantsCode ? "Remplit le code de validation" : "Remplit cet identifiant et son mot de passe")
     }
 }
 

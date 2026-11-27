@@ -316,6 +316,7 @@ struct VaultDetailView: View {
                                 }
                                 Divider().overlay(Color.line)
                             }
+                            if !item.password.isEmpty {
                             VStack(alignment: .leading, spacing: 10) {
                                 Label("Mot de passe", systemImage: "key.fill")
                                     .font(.caption.weight(.semibold))
@@ -339,6 +340,13 @@ struct VaultDetailView: View {
                                     }
                                 }
                                 .font(.subheadline.weight(.semibold))
+                            }
+                            }
+                            if let generator = item.oneTimeCode {
+                                if !item.password.isEmpty { Divider().overlay(Color.line) }
+                                OneTimeCodeCard(generator: generator) { code in
+                                    copy(code, label: "Code de validation copié", expiry: settings.clipboardExpiry)
+                                }
                             }
                             if !item.website.isEmpty {
                                 Divider().overlay(Color.line)
@@ -465,6 +473,17 @@ struct VaultEditView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var showPassword = true
     @State private var spin = 0.0
+    @State private var scanning = false
+
+    /// Le texte saisi pour le code de validation (lien `otpauth://` ou clé secrète).
+    private var codeText: Binding<String> {
+        Binding(get: { item.totp ?? "" }, set: { item.totp = $0.isEmpty ? nil : $0 })
+    }
+
+    /// Vrai si un code de validation est saisi mais illisible.
+    private var codeIsInvalid: Bool {
+        !(item.totp ?? "").trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && item.oneTimeCode == nil
+    }
 
     var body: some View {
         NavigationStack {
@@ -520,6 +539,35 @@ struct VaultEditView: View {
                 } footer: {
                     Text("20 caractères, majuscules, minuscules, chiffres et symboles.")
                 }
+                Section {
+                    TextField("Clé secrète ou lien otpauth://", text: codeText, axis: .vertical)
+                        .font(.system(.footnote, design: .monospaced))
+                        .lineLimit(1...4)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
+                    Button {
+                        scanning = true
+                    } label: {
+                        Label("Scanner le QR code du site", systemImage: "qrcode.viewfinder")
+                    }
+                    if let generator = item.oneTimeCode {
+                        TimelineView(.periodic(from: .now, by: 1)) { timeline in
+                            LabeledContent("Code actuel") {
+                                Text(generator.displayCode(at: timeline.date))
+                                    .font(.system(.body, design: .monospaced).weight(.semibold))
+                                    .foregroundStyle(Color.gold)
+                            }
+                        }
+                    } else if codeIsInvalid {
+                        Label("Ce n'est ni une clé secrète ni un lien otpauth:// valide.", systemImage: "exclamationmark.triangle.fill")
+                            .font(.footnote)
+                            .foregroundStyle(.orange)
+                    }
+                } header: {
+                    Text("Code de validation (2FA)")
+                } footer: {
+                    Text("Sur le site, activez la validation en deux étapes avec une « application d'authentification », puis scannez son QR code ou collez la clé qu'il affiche. KeyForge calcule alors le code à 6 chiffres sur cet iPhone et le propose au-dessus du clavier.")
+                }
                 Section("Notes") {
                     TextField("Notes", text: $item.notes, axis: .vertical)
                         .lineLimit(3...8)
@@ -543,14 +591,30 @@ struct VaultEditView: View {
                     Button("Enregistrer") {
                         var saved = item
                         saved.title = saved.title.trimmingCharacters(in: .whitespacesAndNewlines)
+                        // Le code est rangé sous sa forme complète, au nom de l'entrée.
+                        if var generator = saved.oneTimeCode {
+                            if generator.issuer.isEmpty { generator.issuer = saved.title }
+                            if generator.account.isEmpty { generator.account = saved.username }
+                            saved.totp = generator.uri
+                        } else {
+                            saved.totp = nil
+                        }
                         onSave(saved)
                         dismiss()
                     }
                     .bold()
-                    .disabled(item.title.trimmingCharacters(in: .whitespaces).isEmpty || item.password.isEmpty)
+                    // Un mot de passe, un code de validation, ou les deux.
+                    .disabled(
+                        item.title.trimmingCharacters(in: .whitespaces).isEmpty
+                            || codeIsInvalid
+                            || (item.password.isEmpty && item.oneTimeCode == nil)
+                    )
                 }
             }
         }
         .presentationDragIndicator(.visible)
+        .sheet(isPresented: $scanning) {
+            QRScannerSheet { text in item.totp = text }
+        }
     }
 }

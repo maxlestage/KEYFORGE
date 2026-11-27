@@ -8,6 +8,9 @@ struct VaultItem: Codable, Identifiable, Hashable, Sendable {
     var website: String = ""
     var password: String
     var notes: String = ""
+    /// Le générateur de codes de validation (2FA) : un lien `otpauth://totp/…`.
+    /// Optionnel : absent des coffres d'avant, qui doivent toujours se lire.
+    var totp: String?
     var isFavorite = false
     var createdAt = Date()
     var updatedAt = Date()

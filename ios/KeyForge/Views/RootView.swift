@@ -8,6 +8,7 @@ struct RootView: View {
     @Environment(GeneratorModel.self) private var generator
     @Environment(ToastCenter.self) private var toasts
     @Environment(\.scenePhase) private var scenePhase
+    @State private var incomingCode: IncomingOneTimeCode?
 
     var body: some View {
         ZStack {
@@ -39,6 +40,18 @@ struct RootView: View {
             }
         }
         .animation(.easeInOut(duration: 0.2), value: scenePhase)
+        // Un lien ou un QR code de configuration d'un code de validation, ouvert par iOS
+        // (KeyForge choisi dans « Configurer les codes dans »).
+        .onOpenURL { url in
+            if let code = TOTP(uri: url.absoluteString) {
+                incomingCode = IncomingOneTimeCode(generator: code)
+            } else {
+                toasts.show("Ce lien de code de validation est illisible", symbol: "exclamationmark.triangle.fill")
+            }
+        }
+        .sheet(item: $incomingCode) { incoming in
+            OneTimeCodeSetupView(generator: incoming.generator)
+        }
         .onChange(of: scenePhase) { _, phase in
             if phase == .background {
                 // The decrypted entries and the session history leave memory.

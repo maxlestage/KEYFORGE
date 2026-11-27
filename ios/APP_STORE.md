@@ -52,6 +52,7 @@ PROTÉGEZ
 REMPLISSEZ
 • Activez KeyForge dans Réglages → Général → Remplissage automatique et mots de passe : vos identifiants sont proposés au-dessus du clavier dans Safari et vos apps.
 • Chaque mot de passe n'est rempli qu'après Face ID.
+• Codes de validation (2FA) : scannez le QR code du site, KeyForge calcule le code à 6 chiffres et le propose au-dessus du clavier (iOS 18 et plus récent).
 • Sur iOS 18 et plus récent, insérez un secret tout juste forgé dans n'importe quel champ.
 • Sur iOS 26, transférez votre coffre vers l'app Mots de passe d'Apple en un geste.
 
