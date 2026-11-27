@@ -5,6 +5,17 @@
 	<!-- Les liens et QR codes de configuration d'un code de validation (2FA) :
 	     KeyForge peut être choisi dans Réglages → Général → Remplissage automatique
 	     et mots de passe → Configurer les codes dans. -->
+	<!-- L'écran de lancement d'iOS : le fond d'encre et le logo au centre, exactement là
+	     où l'écran de démarrage de l'app (BootView) le reprend pour l'animer. -->
+	<key>UILaunchScreen</key>
+	<dict>
+		<key>UIColorName</key>
+		<string>LaunchBackground</string>
+		<key>UIImageName</key>
+		<string>LaunchLogo</string>
+		<key>UIImageRespectsSafeAreaInsets</key>
+		<false/>
+	</dict>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>

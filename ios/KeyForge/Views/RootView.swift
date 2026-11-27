@@ -1,7 +1,7 @@
 import SwiftUI
 
-/// Onboarding on the first launch, then the tabs; a privacy screen hides
-/// everything as soon as the app is not in the foreground.
+/// The boot screen at launch, then onboarding on the first launch or the tabs; a privacy
+/// screen hides everything as soon as the app is not in the foreground.
 struct RootView: View {
     @Environment(AppSettings.self) private var settings
     @Environment(VaultStore.self) private var vault
@@ -9,10 +9,37 @@ struct RootView: View {
     @Environment(ToastCenter.self) private var toasts
     @Environment(\.scenePhase) private var scenePhase
     @State private var incomingCode: IncomingOneTimeCode?
+    /// Vrai le temps de l'écran de démarrage, à chaque lancement de l'app.
+    @State private var booting = true
+
+    /// Ce que KeyForge a amorcé au lancement, vérifié pour de bon.
+    private var bootSteps: [BootStep] {
+        let random = BrocolisHasard.bytes(16) != BrocolisHasard.bytes(16)
+        let words = generator.words.words.count
+        let vaultOK = vault.errorMessage == nil
+        return [
+            BootStep(id: 0, symbol: "dice.fill", label: "Hasard Brocolis 🥦", status: random ? "prêt" : "en panne", ok: random),
+            BootStep(id: 1, symbol: "text.quote", label: "Liste de mots", status: "\(words) mots", ok: words > 0),
+            BootStep(
+                id: 2, symbol: "lock.shield.fill", label: "Coffre",
+                status: vaultOK ? (vault.isSealed ? "scellé" : "vide") : "à vérifier", ok: vaultOK
+            ),
+            BootStep(
+                id: 3, symbol: "cpu.fill", label: "Clé du coffre",
+                status: vault.isEnclaveProtected ? "Secure Enclave" : (vault.isSealed ? "trousseau" : "à créer")
+            ),
+        ]
+    }
 
     var body: some View {
         ZStack {
-            if settings.onboardingDone {
+            if booting {
+                BootView(steps: bootSteps) {
+                    withAnimation(.easeOut(duration: 0.4)) { booting = false }
+                }
+                .transition(.opacity.combined(with: .scale(scale: 1.12)))
+                .zIndex(30)
+            } else if settings.onboardingDone {
                 MainTabView()
                     .transition(.opacity.combined(with: .scale(scale: 1.04)))
             } else {
