@@ -39,11 +39,12 @@ FORGEZ
 • Mots de passe de 4 à 128 caractères : majuscules, minuscules, chiffres, symboles, sans caractères ambigus si vous le souhaitez.
 • Phrases de passe de 3 à 20 mots, faciles à retenir et jusqu'à plus de 200 bits d'entropie.
 • Codes PIN de 4 à 12 chiffres.
+• Charabia : jusqu'à 128 caractères illisibles, symboles et Unicode compris (é, ß, λ, Ω, €, §…).
 • Pour chaque secret : robustesse, entropie en bits et temps estimé pour le casser.
-• Le hasard vient du générateur cryptographique de l'iPhone.
+• Le hasard est celui de Brocolis 🥦 : le générateur cryptographique de l'iPhone.
 
 PROTÉGEZ
-• Un coffre pour vos identifiants (site, identifiant, mot de passe, notes, favoris), chiffré dans le trousseau de l'iPhone et jamais synchronisé ailleurs.
+• Un coffre pour vos identifiants (site, identifiant, mot de passe, notes, favoris), chiffré par Brocolis 🥦 (AES-256-GCM, clé de 256 bits propre au coffre) et jamais synchronisé ailleurs.
 • Déverrouillé par Face ID, Touch ID ou le code, verrouillé dès que l'app passe en arrière-plan.
 • Presse-papiers effacé automatiquement, aperçu masqué dans le sélecteur d'apps.
 

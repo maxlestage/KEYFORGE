@@ -51,15 +51,26 @@
 		4B0F00000000000000000031 /* Exceptions for "KeyForge" folder in "KeyForgeAutoFill" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				Core/Argon2.swift,
 				Core/AutoFillMatch.swift,
+				Core/Blake2b.swift,
+				Core/Brocolis.swift,
+				Core/BrocolisHasard.swift,
+				Core/BrocolisV4.swift,
 				Core/CrackTime.swift,
 				Core/Entropy.swift,
 				Core/Generator.swift,
+				Core/Keccak.swift,
+				Core/MLKEM.swift,
+				Core/SHA256.swift,
 				Core/VaultItem.swift,
+				Core/VaultSeal.swift,
 				Core/WordList.swift,
 				Resources/wordlist-fr.txt,
+				Services/AppleCrypto.swift,
 				Services/AutoFillIdentities.swift,
 				Services/BiometricAuth.swift,
+				Services/BrocolisVault.swift,
 				Services/KeychainStore.swift,
 				Theme/Theme.swift,
 			);

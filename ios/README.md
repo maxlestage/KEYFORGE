@@ -11,8 +11,8 @@ Application SwiftUI pour iPhone et iPad, iOS 17 ou plus récent, sans aucune dé
 
 | Onglet | Ce qu'il fait |
 |---|---|
-| **Générer** | Trois modes. *Mot de passe* : 4 à 128 caractères (20 par défaut), majuscules, minuscules, chiffres, symboles `!@#$%^&*()-_=+[]{};:,.?/`, exclusion des caractères ambigus (`0 O o 1 l I \|`), au moins un caractère de chaque famille choisie. *Phrase de passe* : 3 à 20 mots (5 par défaut) tirés d'une liste de 1 024 mots français (10 bits par mot), séparateur `-` `.` `_` espace `/`, majuscules, chiffre en option. *Code PIN* : 4 à 12 chiffres (6 par défaut). Entropie en bits, niveau de robustesse, temps de craquage estimé, copie, enregistrement dans le coffre, historique de la session. |
-| **Coffre** | Titre, identifiant, site web, mot de passe, notes, favori. Recherche, favoris, balayage pour supprimer ou mettre en favori, fiche détaillée (afficher/masquer, copier), formulaire avec générateur intégré. Déverrouillé par Face ID, Touch ID ou le code de l'appareil, verrouillé dès que l'app passe en arrière-plan. |
+| **Générer** | Quatre modes. *Mot de passe* : 4 à 128 caractères (20 par défaut), majuscules, minuscules, chiffres, symboles `!@#$%^&*()-_=+[]{};:,.?/`, exclusion des caractères ambigus (`0 O o 1 l I \|`), au moins un caractère de chaque famille choisie. *Phrase de passe* : 3 à 20 mots (5 par défaut) tirés d'une liste de 1 024 mots français (10 bits par mot), séparateur `-` `.` `_` espace `/`, majuscules, chiffre en option. *Code PIN* : 4 à 12 chiffres (6 par défaut). *Charabia* : 8 à 128 caractères (24 par défaut) tirés de 205 caractères, les 94 ASCII imprimables plus 111 lettres accentuées, grecques et symboles typographiques (un seul point de code NFC chacun, sans espace, caractère invisible ni sosie d'une lettre latine), soit 7,7 bits par caractère ; Unicode désactivable pour s'en tenir à l'ASCII. Tout le hasard vient de `BrocolisHasard`, le module `hasard` de brocolis-proto porté en Swift (le CSPRNG du système en production, le générateur déterministe des vecteurs dans les tests). Entropie en bits, niveau de robustesse, temps de craquage estimé, copie, enregistrement dans le coffre, historique de la session. |
+| **Coffre** | Rangé **chiffré par Brocolis 🥦** : jamais de JSON en clair sur l'appareil (voir plus bas). Titre, identifiant, site web, mot de passe, notes, favori. Recherche, favoris, balayage pour supprimer ou mettre en favori, fiche détaillée (afficher/masquer, copier), formulaire avec générateur intégré. Déverrouillé par Face ID, Touch ID ou le code de l'appareil, verrouillé dès que l'app passe en arrière-plan. |
 | **Analyse** | Estimation locale de l'entropie d'un mot de passe saisi : familles de caractères, longueur, pénalités pour les répétitions, les suites (`abc`, `123`), les rangées du clavier (`azerty`, `qwerty`) et ~55 mots de passe parmi les plus courants. Niveau, temps de craquage moyen à 10¹¹ essais par seconde, critères cochés et conseils. |
 | **Réglages** | Verrouillage biométrique, effacement automatique du presse-papiers (jamais, 30 s, 1 min, 2 min), mode par défaut du générateur, retours haptiques, **chiffrement post-quantique** (mon identité, envoyer, recevoir), **sauvegarde chiffrée** du coffre (export et import au format Brocolis 🥦 v4), effacement du coffre (confirmé par Face ID), à propos. |
 | **Envoyer chiffré** | Depuis le générateur (bouton *Envoyer*), la fiche d'une entrée du coffre ou les réglages : collez le paquet de clés du destinataire, KeyForge produit un message `[[BROCOLIS:v4:…]]` que seul son appareil ouvrira, à envoyer par n'importe quel canal. |
@@ -124,6 +124,22 @@ ios/
 - **Presse-papiers** : copies `localOnly` (pas de presse-papiers universel) avec date d'expiration.
 - **Confidentialité** : aucun code réseau, aucun compte, aucun traceur ; un écran flouté masque
   l'app dans le sélecteur d'applications ; l'historique de session est effacé en arrière-plan.
+
+## Coffre chiffré par Brocolis 🥦
+
+Sur l'iPhone, le coffre n'est jamais rangé en clair. Ses entrées (JSON) forment le premier
+message d'une session **v4 à clé partagée** de Brocolis (`VaultSeal`, même format que la
+sauvegarde chiffrée : `[[BROCOLIS:v4:…]]`, en-tête chiffré, AES-256-GCM, remplissage par blocs
+de 160 octets, clé ML-KEM-768 de cliquet), scellé à nouveau avec une clé éphémère neuve à chaque
+écriture. La clé du coffre (256 bits, tirée de `BrocolisHasard`) et le coffre scellé sont deux
+éléments distincts du trousseau, dans le groupe partagé avec l'extension de remplissage
+automatique, jamais synchronisés ni restaurés ailleurs (`WhenUnlockedThisDeviceOnly`) :
+`BrocolisVault` les lit et les écrit pour l'app et pour l'extension, qui déchiffre après Face ID.
+
+Un coffre d'une version précédente (JSON en clair) est scellé au premier lancement. Un coffre
+scellé dont la clé manque n'est jamais écrasé : il reste fermé et l'erreur s'affiche. Effacer
+le coffre supprime aussi sa clé. Tests : `BrocolisVaultTests` (vecteurs du générateur
+déterministe de brocolis-proto, charabia, sceau, mauvaise clé, ancien format).
 
 ## Chiffrement post-quantique (Brocolis 🥦 v4)
 

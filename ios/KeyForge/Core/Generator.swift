@@ -1,10 +1,11 @@
 import Foundation
 
-/// The three kinds of secrets KeyForge can forge.
+/// The kinds of secrets KeyForge can forge.
 enum GeneratorMode: String, CaseIterable, Codable, Identifiable, Sendable {
     case password
     case passphrase
     case pin
+    case gibberish
 
     var id: String { rawValue }
 
@@ -13,6 +14,17 @@ enum GeneratorMode: String, CaseIterable, Codable, Identifiable, Sendable {
         case .password: "Mot de passe"
         case .passphrase: "Phrase de passe"
         case .pin: "Code PIN"
+        case .gibberish: "Charabia"
+        }
+    }
+
+    /// Le libellé court du sélecteur (quatre modes côte à côte).
+    var shortTitle: String {
+        switch self {
+        case .password: "Mot de passe"
+        case .passphrase: "Phrase"
+        case .pin: "PIN"
+        case .gibberish: "Charabia"
         }
     }
 
@@ -21,6 +33,7 @@ enum GeneratorMode: String, CaseIterable, Codable, Identifiable, Sendable {
         case .password: "key.fill"
         case .passphrase: "text.quote"
         case .pin: "number.square.fill"
+        case .gibberish: "scribble.variable"
         }
     }
 }
@@ -126,6 +139,34 @@ struct PinOptions: Codable, Equatable, Sendable {
     }
 }
 
+/// Le charabia : une suite illisible de lettres, chiffres et symboles, avec en option
+/// des lettres accentuées, grecques et des symboles typographiques (Unicode).
+///
+/// Chaque caractère est un seul point de code, déjà en forme normalisée NFC, visible et
+/// sans ambiguïté de saisie : ni espace, ni caractère invisible, ni diacritique
+/// combinant, ni caractère d'écriture de droite à gauche.
+struct GibberishOptions: Codable, Equatable, Sendable {
+    static let lengthRange = 8...128
+
+    var length: Int = 24
+    var unicode = true
+
+    /// Les 94 caractères ASCII imprimables, espace exclue.
+    static let ascii: [Character] = (0x21...0x7E).map { Character(Unicode.Scalar(UInt8($0))) }
+    /// Lettres accentuées et grecques, symboles typographiques.
+    static let extended: [Character] = Array(
+        "àâäáãåçéèêëíìîïñóòôöõøœúùûüýÿßæÀÂÄÁÃÅÇÉÈÊËÍÌÎÏÑÓÒÔÖÕØŒÚÙÛÜÝŸÆ"
+        + "αβγδεζηθλμξπσφχψωΓΔΘΛΞΠΣΦΨΩ"
+        + "¡¿§¶°±÷¤£€¥¢©®™«»†‡•…‰¬"
+    )
+
+    var pool: [Character] { unicode ? Self.ascii + Self.extended : Self.ascii }
+
+    var clampedLength: Int {
+        min(max(length, Self.lengthRange.lowerBound), Self.lengthRange.upperBound)
+    }
+}
+
 /// A generated secret and its strength.
 struct GeneratedSecret: Equatable, Sendable {
     let value: String
@@ -135,16 +176,15 @@ struct GeneratedSecret: Equatable, Sendable {
     var strength: StrengthLevel { StrengthLevel(bits: entropy) }
 }
 
-/// Forges passwords, passphrases and PINs from a cryptographically secure source.
+/// Forges passwords, passphrases, PINs and gibberish from a cryptographically secure source.
 ///
-/// `SystemRandomNumberGenerator` reads the operating system's CSPRNG
-/// (`arc4random_buf` on Apple platforms), and `Int.random(in:using:)` draws
-/// without modulo bias.
+/// The randomness is Brocolis' (`BrocolisHasard.system()`, the operating system's
+/// CSPRNG, as in brocolis-proto), and `Int.random(in:using:)` draws without modulo bias.
 enum Generator {
     // MARK: Passwords
 
     static func password(_ options: PasswordOptions) -> String {
-        var rng = SystemRandomNumberGenerator()
+        var rng = BrocolisHasard.system()
         return password(options, using: &rng)
     }
 
@@ -176,7 +216,7 @@ enum Generator {
     // MARK: Passphrases
 
     static func passphrase(_ options: PassphraseOptions, words: WordList) -> String {
-        var rng = SystemRandomNumberGenerator()
+        var rng = BrocolisHasard.system()
         return passphrase(options, words: words, using: &rng)
     }
 
@@ -205,7 +245,7 @@ enum Generator {
     // MARK: PINs
 
     static func pin(_ options: PinOptions) -> String {
-        var rng = SystemRandomNumberGenerator()
+        var rng = BrocolisHasard.system()
         return pin(options, using: &rng)
     }
 
@@ -217,5 +257,21 @@ enum Generator {
 
     static func pinEntropy(_ options: PinOptions) -> Double {
         Entropy.bits(length: options.clampedLength, poolSize: 10)
+    }
+
+    // MARK: Charabia
+
+    static func gibberish(_ options: GibberishOptions) -> String {
+        var rng = BrocolisHasard.system()
+        return gibberish(options, using: &rng)
+    }
+
+    static func gibberish<R: RandomNumberGenerator>(_ options: GibberishOptions, using rng: inout R) -> String {
+        let pool = options.pool
+        return String((0..<options.clampedLength).map { _ in pool[Int.random(in: 0..<pool.count, using: &rng)] })
+    }
+
+    static func gibberishEntropy(_ options: GibberishOptions) -> Double {
+        Entropy.bits(length: options.clampedLength, poolSize: options.pool.count)
     }
 }

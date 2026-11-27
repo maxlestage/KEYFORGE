@@ -284,7 +284,7 @@ struct SendEncryptedView: View {
             }
             .scrollDismissesKeyboard(.interactively)
             .background(ForgeBackground(intensity: 0.5))
-            .navigationTitle(subject.map { "Envoyer « \($0) »" } ?? "Envoyer chiffré")
+            .navigationTitle(subject.map { "Envoyer « \($0) »" } ?? "Envoyer avec Brocolis 🥦")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {

@@ -21,6 +21,10 @@ final class GeneratorModel {
         didSet { optionsChanged(pin, key: AppSettings.Keys.pinOptions, mode: .pin) }
     }
 
+    var gibberish: GibberishOptions {
+        didSet { optionsChanged(gibberish, key: AppSettings.Keys.gibberishOptions, mode: .gibberish) }
+    }
+
     private(set) var secret = GeneratedSecret(value: "", mode: .password, entropy: 0)
     /// Increases at every new secret: drives the animations.
     private(set) var generation = 0
@@ -38,6 +42,8 @@ final class GeneratorModel {
         passphrase = settings.load(PassphraseOptions.self, key: AppSettings.Keys.passphraseOptions)
             ?? PassphraseOptions()
         pin = settings.load(PinOptions.self, key: AppSettings.Keys.pinOptions) ?? PinOptions()
+        gibberish = settings.load(GibberishOptions.self, key: AppSettings.Keys.gibberishOptions)
+            ?? GibberishOptions()
         regenerate()
     }
 
@@ -60,6 +66,9 @@ final class GeneratorModel {
         case .pin:
             value = Generator.pin(pin)
             entropy = Generator.pinEntropy(pin)
+        case .gibberish:
+            value = Generator.gibberish(gibberish)
+            entropy = Generator.gibberishEntropy(gibberish)
         }
         secret = GeneratedSecret(value: value, mode: mode, entropy: entropy)
         generation += 1

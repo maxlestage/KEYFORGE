@@ -71,23 +71,32 @@ struct SettingsView: View {
                 .listRowBackground(Color.surface)
 
                 Section {
-                    NavigationLink {
-                        IdentityView()
-                    } label: {
-                        Label("Mon identité post-quantique", systemImage: "atom")
-                    }
                     Button {
                         composing = true
                     } label: {
-                        Label("Envoyer un secret chiffré", systemImage: "paperplane.fill")
+                        HStack(spacing: 12) {
+                            Text("🥦").font(.title2)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Envoyer avec Brocolis").font(.headline).foregroundStyle(.white)
+                                Text("Un mot de passe, un code, un secret : chiffré pour un seul destinataire")
+                                    .font(.caption)
+                                    .foregroundStyle(Color.textSecondary)
+                            }
+                        }
+                        .padding(.vertical, 4)
+                    }
+                    NavigationLink {
+                        IdentityView()
+                    } label: {
+                        Label("Mon identité Brocolis", systemImage: "atom")
                     }
                     NavigationLink {
                         ReceiveEncryptedView()
                     } label: {
-                        Label("Recevoir un secret chiffré", systemImage: "envelope.open.fill")
+                        Label("Recevoir un message Brocolis", systemImage: "envelope.open.fill")
                     }
                 } header: {
-                    Text("Chiffrement post-quantique")
+                    Text("Brocolis 🥦 · chiffrement post-quantique")
                 } footer: {
                     Text("Protocole Brocolis v4 🥦 : X25519 + ML-KEM-768. Un secret envoyé reste protégé tant que l'une des deux protections tient, même face à un ordinateur quantique. Votre identité ne quitte pas cet iPhone.")
                 }
@@ -112,6 +121,17 @@ struct SettingsView: View {
                 .listRowBackground(Color.surface)
 
                 Section {
+                    Label {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(vault.isSealed ? "Chiffré par Brocolis 🥦" : "Vide : chiffré par Brocolis 🥦 dès la première entrée")
+                                .foregroundStyle(.white)
+                            Text("Protocole v4, AES-256-GCM, clé de 256 bits propre au coffre")
+                                .font(.caption)
+                                .foregroundStyle(Color.textSecondary)
+                        }
+                    } icon: {
+                        Image(systemName: "lock.shield.fill").foregroundStyle(Color.green)
+                    }
                     Button(role: .destructive) {
                         confirmErase = true
                     } label: {
@@ -121,7 +141,7 @@ struct SettingsView: View {
                 } header: {
                     Text("Coffre")
                 } footer: {
-                    Text("Supprime toutes les clés enregistrées dans le trousseau de cet iPhone.")
+                    Text("Sur cet iPhone, le coffre n'est jamais rangé en clair : c'est du charabia au format Brocolis, que seule sa clé, gardée dans le trousseau de cet appareil (ni iCloud, ni sauvegarde), déchiffre. L'effacer supprime toutes les entrées et cette clé.")
                 }
                 .listRowBackground(Color.surface)
 

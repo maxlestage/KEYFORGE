@@ -10,17 +10,24 @@ final class VaultStore {
     private(set) var isAuthenticating = false
     var errorMessage: String?
 
-    private let keychain: KeychainStore
+    private let store: BrocolisVault
+    /// Vrai quand le coffre rangé est scellé par Brocolis 🥦 (affiché dans les réglages).
+    private(set) var isSealed = false
 
-    init(keychain: KeychainStore = KeychainStore()) {
-        self.keychain = keychain
-        // Le coffre d'une version précédente rejoint le groupe partagé avec l'extension
-        // de remplissage automatique (sans rien perdre si le déplacement échoue).
+    init(store: BrocolisVault = BrocolisVault()) {
+        self.store = store
         do {
-            try keychain.migrateToDefaultGroup()
+            // Le coffre d'une version précédente rejoint le groupe partagé avec l'extension
+            // de remplissage automatique (sans rien perdre si le déplacement échoue)…
+            try store.vault.migrateToDefaultGroup()
+            // …puis, s'il est encore en JSON clair, il est scellé par Brocolis.
+            if !store.isSealed(), try store.vault.load() != nil {
+                try store.save(store.load())
+            }
         } catch {
             errorMessage = error.localizedDescription
         }
+        isSealed = store.isSealed()
     }
 
     var favorites: [VaultItem] { items.filter(\.isFavorite).sortedForDisplay() }
@@ -37,7 +44,8 @@ final class VaultStore {
             isAuthenticating = false
             guard ok else { return }
         }
-        load()
+        // Un coffre illisible reste fermé : rien ne doit pouvoir l'écraser.
+        guard load() else { return }
         isLocked = false
     }
 
@@ -74,9 +82,12 @@ final class VaultStore {
     /// Adds an entry without opening the vault (from the generator).
     func add(_ item: VaultItem) {
         if isLocked {
-            var stored = (try? decode(keychain.load())) ?? []
-            stored.append(item)
-            write(stored)
+            do {
+                // Jamais d'écriture par-dessus un coffre qu'on n'a pas pu lire.
+                write(try store.load() + [item])
+            } catch {
+                errorMessage = error.localizedDescription
+            }
         } else {
             upsert(item)
         }
@@ -94,7 +105,7 @@ final class VaultStore {
         }
         if !isLocked { return items }
         do {
-            return try decode(keychain.load())
+            return try store.load()
         } catch {
             errorMessage = error.localizedDescription
             return nil
@@ -107,7 +118,7 @@ final class VaultStore {
         let current: [VaultItem]
         if isLocked {
             do {
-                current = try decode(keychain.load())
+                current = try store.load()
             } catch {
                 // Jamais d'écriture par-dessus un coffre qu'on n'a pas pu lire.
                 errorMessage = error.localizedDescription
@@ -131,8 +142,9 @@ final class VaultStore {
 
     func eraseAll() {
         do {
-            try keychain.delete()
+            try store.erase()
             items = []
+            isSealed = false
             AutoFillIdentities.removeAll()
         } catch {
             errorMessage = error.localizedDescription
@@ -141,12 +153,15 @@ final class VaultStore {
 
     // MARK: Storage
 
-    private func load() {
+    @discardableResult
+    private func load() -> Bool {
         do {
-            items = try decode(keychain.load())
+            items = try store.load()
+            return true
         } catch {
             errorMessage = error.localizedDescription
             items = []
+            return false
         }
     }
 
@@ -156,17 +171,14 @@ final class VaultStore {
 
     private func write(_ items: [VaultItem]) {
         do {
-            try keychain.save(JSONEncoder().encode(items))
+            // Scellé par Brocolis : jamais de JSON en clair dans le trousseau.
+            try store.save(items)
+            isSealed = true
             // Les suggestions au-dessus du clavier suivent le coffre (sites et
             // identifiants seulement : les mots de passe restent dans le coffre).
             AutoFillIdentities.sync(items)
         } catch {
             errorMessage = error.localizedDescription
         }
-    }
-
-    private func decode(_ data: Data?) throws -> [VaultItem] {
-        guard let data else { return [] }
-        return try JSONDecoder().decode([VaultItem].self, from: data)
     }
 }

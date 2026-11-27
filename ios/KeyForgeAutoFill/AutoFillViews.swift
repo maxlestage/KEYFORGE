@@ -165,7 +165,7 @@ private struct ForgeInsertView: View {
     var body: some View {
         VStack(spacing: 20) {
             Picker("Type", selection: $mode) {
-                ForEach(GeneratorMode.allCases) { Text($0.title).tag($0) }
+                ForEach(GeneratorMode.allCases) { Text($0.shortTitle).tag($0) }
             }
             .pickerStyle(.segmented)
 
@@ -230,6 +230,10 @@ private struct ForgeInsertView: View {
             let options = PinOptions()
             secret = Generator.pin(options)
             bits = Generator.pinEntropy(options)
+        case .gibberish:
+            let options = GibberishOptions()
+            secret = Generator.gibberish(options)
+            bits = Generator.gibberishEntropy(options)
         }
     }
 }

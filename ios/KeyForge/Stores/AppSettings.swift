@@ -14,6 +14,7 @@ final class AppSettings {
         static let passwordOptions = "generator.passwordOptions"
         static let passphraseOptions = "generator.passphraseOptions"
         static let pinOptions = "generator.pinOptions"
+        static let gibberishOptions = "generator.gibberishOptions"
     }
 
     private let defaults: UserDefaults

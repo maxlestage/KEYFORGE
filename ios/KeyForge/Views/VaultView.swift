@@ -219,7 +219,7 @@ struct LockedVaultView: View {
             VStack(spacing: 8) {
                 Text("Coffre verrouillé")
                     .font(.title2.weight(.bold))
-                Text("Vos clés sont chiffrées dans le trousseau de cet iPhone.")
+                Text("Vos clés sont chiffrées par Brocolis 🥦 sur cet iPhone : sans Face ID, ce n'est que du charabia.")
                     .font(.subheadline)
                     .foregroundStyle(Color.textSecondary)
                     .multilineTextAlignment(.center)
@@ -363,7 +363,7 @@ struct VaultDetailView: View {
                             Haptics.tap()
                             sending = true
                         } label: {
-                            Label("Envoyer chiffré · post-quantique", systemImage: "paperplane.fill")
+                            Label("Envoyer avec Brocolis 🥦", systemImage: "paperplane.fill")
                                 .frame(maxWidth: .infinity)
                         }
                         .buttonStyle(EmberButtonStyle())
@@ -387,7 +387,7 @@ struct VaultDetailView: View {
                             Button {
                                 sending = true
                             } label: {
-                                Label("Envoyer chiffré", systemImage: "paperplane")
+                                Label("Envoyer avec Brocolis", systemImage: "paperplane")
                             }
                             Button {
                                 vault.toggleFavorite(item)

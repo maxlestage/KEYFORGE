@@ -185,10 +185,9 @@ enum Brocolis {
 
     // MARK: Utilitaires
 
-    /// Des octets du générateur aléatoire sécurisé du système.
+    /// Des octets du hasard de Brocolis (le CSPRNG du système, `BrocolisHasard`).
     static func randomBytes(_ count: Int) -> [UInt8] {
-        var rng = SystemRandomNumberGenerator()
-        return (0..<count).map { _ in UInt8.random(in: .min ... .max, using: &rng) }
+        BrocolisHasard.bytes(count)
     }
 
     /// Le contenu entre `head` et `]]`.

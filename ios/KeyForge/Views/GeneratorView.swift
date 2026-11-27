@@ -21,6 +21,7 @@ struct GeneratorView: View {
                     modePicker.entrance(delay: 0.05)
                     secretCard.entrance(delay: 0.1)
                     actions.entrance(delay: 0.15)
+                    brocolisCard.entrance(delay: 0.18)
                     options.entrance(delay: 0.2)
                     history.entrance(delay: 0.25)
                 }
@@ -78,11 +79,11 @@ struct GeneratorView: View {
                         model.mode = mode
                     }
                 } label: {
-                    HStack(spacing: 6) {
+                    VStack(spacing: 3) {
                         Image(systemName: mode.symbol)
-                        Text(mode.title).lineLimit(1).minimumScaleFactor(0.7)
+                        Text(mode.shortTitle).lineLimit(1).minimumScaleFactor(0.7)
                     }
-                    .font(.subheadline.weight(.semibold))
+                    .font(.footnote.weight(.semibold))
                     .foregroundStyle(model.mode == mode ? .white : Color.textSecondary)
                     .padding(.vertical, 10)
                     .frame(maxWidth: .infinity)
@@ -96,6 +97,7 @@ struct GeneratorView: View {
                     }
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel(mode.title)
                 .accessibilityAddTraits(model.mode == mode ? .isSelected : [])
             }
         }
@@ -131,6 +133,11 @@ struct GeneratorView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .contentTransition(.interpolate)
             .animation(.snappy, value: model.secret.entropy)
+
+            Label("Hasard de Brocolis 🥦 : le générateur cryptographique de l'iPhone", systemImage: "dice.fill")
+                .font(.caption)
+                .foregroundStyle(Color.textSecondary)
+                .frame(maxWidth: .infinity, alignment: .leading)
         }
         .forgeCard(padding: 20)
         .overlay(
@@ -198,6 +205,43 @@ struct GeneratorView: View {
         }
     }
 
+    // MARK: Brocolis
+
+    /// L'envoi chiffré Brocolis, mis en avant sous la clé forgée.
+    private var brocolisCard: some View {
+        Button {
+            Haptics.tap()
+            sharing = model.secret.value
+        } label: {
+            HStack(spacing: 14) {
+                Text("🥦")
+                    .font(.system(size: 30))
+                    .frame(width: 52, height: 52)
+                    .background(Circle().fill(Color.green.opacity(0.18)))
+                VStack(alignment: .leading, spacing: 3) {
+                    Text("Envoyer avec Brocolis")
+                        .font(.headline)
+                        .foregroundStyle(.white)
+                    Text("Chiffrée en post-quantique (X25519 + ML-KEM-768) : seul l'iPhone du destinataire pourra l'ouvrir.")
+                        .font(.caption)
+                        .foregroundStyle(Color.textSecondary)
+                        .multilineTextAlignment(.leading)
+                }
+                Spacer(minLength: 0)
+                Image(systemName: "chevron.right")
+                    .font(.footnote.weight(.bold))
+                    .foregroundStyle(Color.textSecondary)
+            }
+            .forgeCard(padding: 14)
+            .overlay(
+                RoundedRectangle(cornerRadius: Theme.corner, style: .continuous)
+                    .strokeBorder(Color.green.opacity(0.35))
+            )
+        }
+        .buttonStyle(PressableStyle())
+        .accessibilityHint("Chiffre ce secret avec le protocole Brocolis v4 pour un destinataire")
+    }
+
     // MARK: Options
 
     @ViewBuilder
@@ -241,6 +285,25 @@ struct GeneratorView: View {
                 Label("Liste de \(model.words.words.count) mots français : \(Int(model.words.bitsPerWord)) bits par mot.", systemImage: "info.circle")
                     .font(.footnote)
                     .foregroundStyle(Color.textSecondary)
+            case .gibberish:
+                LengthSlider(
+                    title: "Longueur",
+                    value: $model.gibberish.length,
+                    range: GibberishOptions.lengthRange,
+                    unit: "caractères"
+                )
+                Divider().overlay(Color.line)
+                OptionToggle(
+                    title: "Unicode",
+                    detail: "Accents, grec et symboles : é ø ß λ Ω € § ¶ …",
+                    isOn: $model.gibberish.unicode
+                )
+                Label(
+                    "\(model.gibberish.pool.count) caractères possibles : \(String(format: "%.1f", log2(Double(model.gibberish.pool.count)))) bits par caractère. Certains sites refusent l'Unicode : coupez-le pour s'en tenir à l'ASCII.",
+                    systemImage: "info.circle"
+                )
+                .font(.footnote)
+                .foregroundStyle(Color.textSecondary)
             case .pin:
                 LengthSlider(
                     title: "Nombre de chiffres",

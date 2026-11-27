@@ -33,7 +33,8 @@ final class AutoFillModel {
     var onInsert: ((String) -> Void)?
     var onConfigured: (() -> Void)?
 
-    private let keychain = KeychainStore()
+    /// Le coffre scellé par Brocolis 🥦, déchiffré ici après Face ID.
+    private let store = BrocolisVault()
 
     /// Les entrées du site d'abord, puis les autres ; filtrées par la recherche.
     var sections: (suggested: [VaultItem], others: [VaultItem]) {
@@ -87,11 +88,7 @@ final class AutoFillModel {
     @discardableResult
     private func load() -> Bool {
         do {
-            if let data = try keychain.load() {
-                items = try JSONDecoder().decode([VaultItem].self, from: data)
-            } else {
-                items = []
-            }
+            items = try store.load()
             return true
         } catch {
             phase = .failed("Le coffre est illisible : \(error.localizedDescription)")
