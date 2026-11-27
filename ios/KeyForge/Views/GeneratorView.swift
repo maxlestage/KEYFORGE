@@ -385,21 +385,103 @@ struct LengthSlider: View {
             }
             HStack(spacing: 12) {
                 StepButton(symbol: "minus") { if value > range.lowerBound { value -= 1 } }
-                Slider(
-                    value: Binding(
-                        get: { Double(value) },
-                        set: { value = Int($0.rounded()) }
-                    ),
-                    in: Double(range.lowerBound)...Double(range.upperBound),
-                    step: 1
-                )
-                .tint(.ember)
-                .accessibilityLabel(title)
-                .accessibilityValue("\(value) \(unit)")
+                ScrollSafeSlider(value: $value, range: range)
+                    .accessibilityLabel(title)
+                    .accessibilityValue("\(value) \(unit)")
                 StepButton(symbol: "plus") { if value < range.upperBound { value += 1 } }
             }
         }
         .onChange(of: value) { _, _ in Haptics.selection() }
+    }
+}
+
+/// Un curseur qui ne bouge qu'avec un geste horizontal. Dans une page qui défile, le
+/// `Slider` d'iOS prend le doigt dès qu'il le touche : un glissement vertical pour
+/// faire défiler la page changeait la valeur au passage. Ici, la direction du geste est
+/// décidée sur ses premiers points : franchement horizontale, le curseur suit le doigt ;
+/// sinon la page défile et la valeur ne change pas. Un toucher place le curseur.
+struct ScrollSafeSlider: View {
+    @Binding var value: Int
+    let range: ClosedRange<Int>
+
+    /// La direction du geste en cours, décidée une fois pour toutes à son début.
+    @State private var axis: Axis?
+    /// Le point de départ du geste en cours : un nouveau point, c'est un nouveau geste
+    /// (même si le précédent a été interrompu par le défilement sans se terminer).
+    @State private var gestureStart: CGPoint?
+    @GestureState private var touching = false
+
+    private let thumb: CGFloat = 28
+
+    var body: some View {
+        GeometryReader { proxy in
+            let usable = max(proxy.size.width - thumb, 1)
+            let offset = usable * fraction
+            ZStack(alignment: .leading) {
+                Capsule()
+                    .fill(Color.surfaceHigh)
+                    .frame(height: 6)
+                Capsule()
+                    .fill(Theme.ember)
+                    .frame(width: offset + thumb / 2, height: 6)
+                Circle()
+                    .fill(.white)
+                    .frame(width: thumb, height: thumb)
+                    .shadow(color: .black.opacity(0.35), radius: 4, y: 2)
+                    .scaleEffect(touching && axis == .horizontal ? 1.15 : 1)
+                    .animation(.snappy(duration: 0.15), value: touching && axis == .horizontal)
+                    .offset(x: offset)
+            }
+            .frame(maxHeight: .infinity)
+            .contentShape(Rectangle())
+            // En même temps que le défilement, jamais à sa place : la page défile toujours.
+            .simultaneousGesture(
+                DragGesture(minimumDistance: 6)
+                    .updating($touching) { _, state, _ in state = true }
+                    .onChanged { drag in
+                        if gestureStart != drag.startLocation {
+                            gestureStart = drag.startLocation
+                            axis = nil
+                        }
+                        if axis == nil {
+                            let dx = abs(drag.translation.width)
+                            let dy = abs(drag.translation.height)
+                            guard max(dx, dy) >= 6 else { return }
+                            axis = dx > dy * 1.4 ? .horizontal : .vertical
+                        }
+                        guard axis == .horizontal else { return }
+                        set(x: drag.location.x, usable: usable)
+                    }
+                    .onEnded { _ in
+                        axis = nil
+                        gestureStart = nil
+                    }
+            )
+            .onTapGesture(count: 1, coordinateSpace: .local) { location in
+                set(x: location.x, usable: usable)
+            }
+        }
+        .frame(height: 34)
+        .accessibilityElement()
+        .accessibilityAdjustableAction { direction in
+            switch direction {
+            case .increment: if value < range.upperBound { value += 1 }
+            case .decrement: if value > range.lowerBound { value -= 1 }
+            @unknown default: break
+            }
+        }
+    }
+
+    private var span: Int { max(range.upperBound - range.lowerBound, 1) }
+
+    private var fraction: CGFloat {
+        CGFloat(min(max(value, range.lowerBound), range.upperBound) - range.lowerBound) / CGFloat(span)
+    }
+
+    private func set(x: CGFloat, usable: CGFloat) {
+        let ratio = min(max((x - thumb / 2) / usable, 0), 1)
+        let new = range.lowerBound + Int((ratio * CGFloat(span)).rounded())
+        if new != value { value = new }
     }
 }
 
