@@ -1,0 +1,38 @@
+# Diagnostic : affiche les API d'AuthenticationServices du SDK iOS installé (codes de
+# validation, enregistrement et génération de mots de passe). Lancement manuel.
+name: SDK headers
+
+on:
+  workflow_dispatch:
+
+jobs:
+  headers:
+    runs-on: macos-15
+    timeout-minutes: 10
+    steps:
+      - name: Select the newest Xcode
+        run: |
+          xcode=$(ls -d /Applications/Xcode_*.app | sed -E 's/.*Xcode_([0-9.]+)\.app/\1 &/' \
+            | grep -vi beta | sort -t. -k1,1n -k2,2n -k3,3n | tail -1 | cut -d' ' -f2)
+          sudo xcode-select -s "$xcode/Contents/Developer"
+          xcodebuild -version
+      - name: AuthenticationServices headers
+        run: |
+          sdk=$(xcrun --sdk iphoneos --show-sdk-path)
+          h="$sdk/System/Library/Frameworks/AuthenticationServices.framework/Headers"
+          ls "$h" | grep -iE "OneTimeCode|SavePassword|GeneratePassword|CredentialProvider|CredentialIdentity|CredentialRequest|PasswordCredential|Settings" || true
+          for f in ASCredentialProviderViewController.h ASOneTimeCodeCredential.h ASOneTimeCodeCredentialIdentity.h \
+                   ASOneTimeCodeCredentialRequest.h ASCredentialRequest.h ASCredentialProviderExtensionContext.h \
+                   ASCredentialIdentityStore.h ASCredentialIdentity.h ASSettingsHelper.h; do
+            echo "=================== $f"
+            [ -f "$h/$f" ] && grep -vE "^\s*$|^//|^ \*|^/\*" "$h/$f" || echo "(absent)"
+          done
+          for f in $(ls "$h" | grep -iE "SavePassword|GeneratePassword|GeneratedPassword"); do
+            echo "=================== $f"
+            cat "$h/$f"
+          done
+          echo "=================== plist keys / strings"
+          grep -rhoE "(Provides|Supports|Shows)[A-Za-z]+" "$h" | sort -u
+          echo "=================== swiftinterface"
+          si=$(ls "$sdk"/System/Library/Frameworks/AuthenticationServices.framework/Modules/AuthenticationServices.swiftmodule/arm64e-apple-ios.swiftinterface 2>/dev/null || true)
+          [ -n "$si" ] && grep -nE "OneTimeCode|SavePassword|GeneratePassword|textToInsert|TextToInsert" "$si" | head -80 || true
