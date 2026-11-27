@@ -18,6 +18,20 @@ struct SettingsView: View {
     /// Auteur de KeyForge, affiché dans « À propos » (le même que sur le site).
     static let author = "Maxime Nathan Lestage"
 
+    /// Où en est la clé du coffre, et pourquoi quand la Secure Enclave ne l'a pas prise.
+    private var enclaveDetail: String {
+        if vault.isEnclaveProtected {
+            return "Libérée seulement après \(BiometricAuth.label) ou le code de l'iPhone"
+        }
+        if let issue = vault.enclaveIssue { return issue }
+        if !settings.biometricLock {
+            return "Activez le verrouillage biométrique pour la confier à la Secure Enclave"
+        }
+        return vault.isSealed
+            ? "Elle rejoint la Secure Enclave à la prochaine ouverture du coffre"
+            : "Elle rejoindra la Secure Enclave dès la première entrée"
+    }
+
     var body: some View {
         @Bindable var settings = settings
         NavigationStack {
@@ -40,6 +54,13 @@ struct SettingsView: View {
                     Toggle(isOn: $settings.biometricLock) {
                         Label("Verrouillage biométrique", systemImage: BiometricAuth.symbol)
                     }
+                    .onChange(of: settings.biometricLock) { _, enabled in
+                        Task {
+                            // Couper le verrouillage sort la clé de la Secure Enclave :
+                            // refusé sans authentification, le réglage reste actif.
+                            if !(await vault.setEnclaveProtection(enabled)) { settings.biometricLock = true }
+                        }
+                    }
                     Picker(selection: $settings.clipboardExpiry) {
                         ForEach(ClipboardExpiry.allCases) { expiry in
                             Text(expiry.label).tag(expiry)
@@ -50,7 +71,7 @@ struct SettingsView: View {
                 } header: {
                     Text("Sécurité")
                 } footer: {
-                    Text("Le coffre demande \(BiometricAuth.label) à chaque ouverture et se verrouille dès que l'app passe en arrière-plan. Les copies restent sur cet appareil (pas de presse-papiers universel).")
+                    Text("Le coffre demande \(BiometricAuth.label) à chaque ouverture et se verrouille dès que l'app passe en arrière-plan. Avec ce verrouillage, la clé du coffre est gardée par la Secure Enclave, la puce de sécurité de l'iPhone, qui ne la libère qu'à vous. Les copies restent sur cet appareil (pas de presse-papiers universel).")
                 }
                 .listRowBackground(Color.surface)
 
@@ -132,6 +153,18 @@ struct SettingsView: View {
                     } icon: {
                         Image(systemName: "lock.shield.fill").foregroundStyle(Color.green)
                     }
+                    Label {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(vault.isEnclaveProtected ? "Clé gardée par la Secure Enclave" : "Clé dans le trousseau de cet iPhone")
+                                .foregroundStyle(.white)
+                            Text(enclaveDetail)
+                                .font(.caption)
+                                .foregroundStyle(Color.textSecondary)
+                        }
+                    } icon: {
+                        Image(systemName: vault.isEnclaveProtected ? "cpu.fill" : "key.fill")
+                            .foregroundStyle(vault.isEnclaveProtected ? Color.green : Color.gold)
+                    }
                     Button(role: .destructive) {
                         confirmErase = true
                     } label: {
@@ -141,7 +174,7 @@ struct SettingsView: View {
                 } header: {
                     Text("Coffre")
                 } footer: {
-                    Text("Sur cet iPhone, le coffre n'est jamais rangé en clair : c'est du charabia au format Brocolis, que seule sa clé, gardée dans le trousseau de cet appareil (ni iCloud, ni sauvegarde), déchiffre. L'effacer supprime toutes les entrées et cette clé.")
+                    Text("Sur cet iPhone, le coffre n'est jamais rangé en clair : c'est du charabia au format Brocolis, que seule sa clé déchiffre. Cette clé ne quitte pas l'appareil (ni iCloud, ni sauvegarde) et, gardée par la Secure Enclave, elle n'est libérée qu'après \(BiometricAuth.label) ou le code : lire le trousseau ne suffit pas. Elle dépend du code de l'iPhone : gardez une sauvegarde chiffrée. Effacer le coffre supprime toutes les entrées et cette clé.")
                 }
                 .listRowBackground(Color.surface)
 

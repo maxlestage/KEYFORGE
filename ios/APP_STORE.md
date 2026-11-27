@@ -45,6 +45,7 @@ FORGEZ
 
 PROTÉGEZ
 • Un coffre pour vos identifiants (site, identifiant, mot de passe, notes, favoris), chiffré par Brocolis 🥦 (AES-256-GCM, clé de 256 bits propre au coffre) et jamais synchronisé ailleurs.
+• La clé du coffre est gardée par la Secure Enclave, la puce de sécurité de l'iPhone : elle n'est libérée qu'après Face ID, Touch ID ou le code.
 • Déverrouillé par Face ID, Touch ID ou le code, verrouillé dès que l'app passe en arrière-plan.
 • Presse-papiers effacé automatiquement, aperçu masqué dans le sélecteur d'apps.
 

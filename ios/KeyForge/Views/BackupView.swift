@@ -388,8 +388,8 @@ private struct ImportPane: View {
         }
         switch result {
         case .success(let items):
-            guard let added = vault.importEntries(items) else {
-                job.phase = .failed(vault.errorMessage ?? "Le coffre n'a pas pu être lu.")
+            guard let added = await vault.importEntries(items) else {
+                job.phase = .failed(vault.errorMessage ?? "Le coffre n'a pas pu être ouvert.")
                 Haptics.warning()
                 return
             }

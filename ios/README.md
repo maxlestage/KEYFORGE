@@ -136,10 +136,34 @@ de 160 octets, clé ML-KEM-768 de cliquet), scellé à nouveau avec une clé ép
 automatique, jamais synchronisés ni restaurés ailleurs (`WhenUnlockedThisDeviceOnly`) :
 `BrocolisVault` les lit et les écrit pour l'app et pour l'extension, qui déchiffre après Face ID.
 
+### La clé du coffre dans la Secure Enclave
+
+Lire le trousseau ne suffit pas à ouvrir le coffre. Avec le verrouillage biométrique (actif par
+défaut), la clé du coffre n'est pas rangée telle quelle : elle est enveloppée pour une clé
+P-256 née dans la **Secure Enclave**, qui n'en sort jamais et que la puce n'utilise qu'après
+Face ID, Touch ID ou le code (`userPresence`). `VaultEnclave` crée cette clé ; `VaultKeyWrap`
+fait l'enveloppe (ECIES : clé éphémère P-256, ECDH, HKDF-SHA256, AES-256-GCM, 125 octets).
+L'app et l'extension passent à l'enclave le contexte qui vient d'authentifier le propriétaire :
+une seule demande Face ID, et aucune autre ne peut surgir ensuite (`interactionNotAllowed`).
+
+- **Migration vérifiée** : à la première ouverture authentifiée, la clé est enveloppée, relue
+  depuis le trousseau et rendue par l'enclave ; la clé telle quelle n'est effacée que si
+  l'enclave a rendu exactement la même. Un échec ne casse rien : la clé reste dans le
+  trousseau et la raison s'affiche dans *Réglages → Coffre*. Une interruption laisse les deux
+  formes, et la clé telle quelle l'emporte.
+- **Coffre ouvert** : la clé reste en mémoire le temps de la session, oubliée au verrouillage.
+  **Coffre fermé** : ajouter une clé depuis le générateur ou importer une sauvegarde demande
+  Face ID, puisque sceller à nouveau le coffre exige sa clé.
+- **Verrouillage biométrique coupé** : après authentification, la clé retourne dans le
+  trousseau (sans code sur l'iPhone ou sans Secure Enclave, elle y reste aussi).
+- La clé dépend du code de l'iPhone : la **sauvegarde chiffrée** reste le filet de sécurité.
+
 Un coffre d'une version précédente (JSON en clair) est scellé au premier lancement. Un coffre
 scellé dont la clé manque n'est jamais écrasé : il reste fermé et l'erreur s'affiche. Effacer
 le coffre supprime aussi sa clé. Tests : `BrocolisVaultTests` (vecteurs du générateur
-déterministe de brocolis-proto, charabia, sceau, mauvaise clé, ancien format).
+déterministe de brocolis-proto, charabia, sceau, mauvaise clé, ancien format) et
+`VaultEnclaveTests` (enveloppe, coffre dans le trousseau, coffre dans la Secure Enclave et
+migration interrompue quand le banc d'essai fournit une enclave).
 
 ## Chiffrement post-quantique (Brocolis 🥦 v4)
 

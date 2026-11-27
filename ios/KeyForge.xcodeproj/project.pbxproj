@@ -72,6 +72,7 @@
 				Services/BiometricAuth.swift,
 				Services/BrocolisVault.swift,
 				Services/KeychainStore.swift,
+				Services/VaultEnclave.swift,
 				Theme/Theme.swift,
 			);
 			target = 4B0F00000000000000000022 /* KeyForgeAutoFill */;

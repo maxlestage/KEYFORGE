@@ -81,7 +81,7 @@ jobs:
             -resultBundlePath "$RUNNER_TEMP/KeyForge.xcresult" \
             CODE_SIGNING_ALLOWED=NO test > "$RUNNER_TEMP/test.log" 2>&1
           status=$?
-          grep -E "error:|Test Case .*(passed|failed)|Executed|TEST (SUCCEEDED|FAILED)" "$RUNNER_TEMP/test.log"
+          grep -E "error:|Test Case .*(passed|failed|skipped)|Executed|TEST (SUCCEEDED|FAILED)" "$RUNNER_TEMP/test.log"
           [ "$status" -eq 0 ] || tail -n 80 "$RUNNER_TEMP/test.log"
           exit $status
 

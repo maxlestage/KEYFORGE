@@ -1,4 +1,5 @@
 import Foundation
+import LocalAuthentication
 import Observation
 
 /// L'état de l'extension : ce qu'iOS a demandé, le verrou, les entrées du coffre.
@@ -56,9 +57,8 @@ final class AutoFillModel {
             // Rien du coffre n'est lu : un secret neuf, forgé sur l'appareil.
             phase = .ready
         case .configuration:
-            // Seuls les sites et identifiants partent vers iOS, pas les mots de passe.
-            if load() { AutoFillIdentities.sync(items) }
             phase = .ready
+            Task { await syncIdentities() }
         case .list, .single:
             Task { await unlock() }
         }
@@ -69,11 +69,15 @@ final class AutoFillModel {
     func unlock() async {
         guard phase != .unlocking else { return }
         phase = .unlocking
-        guard await BiometricAuth.authenticate(reason: "Remplir avec un identifiant de votre coffre KeyForge") else {
+        // Le contexte authentifié laisse la Secure Enclave libérer la clé du coffre.
+        let context = LAContext()
+        guard await BiometricAuth.authenticate(
+            context: context, reason: "Remplir avec un identifiant de votre coffre KeyForge"
+        ) else {
             phase = .locked
             return
         }
-        guard load() else { return }
+        guard load(context) else { return }
         if case .single(let record) = request {
             if let item = items.first(where: { $0.id.uuidString == record }) {
                 onSelect?(item)
@@ -85,10 +89,25 @@ final class AutoFillModel {
         phase = .ready
     }
 
+    /// À l'activation de KeyForge dans les réglages d'iOS : les sites et identifiants du
+    /// coffre (jamais les mots de passe) sont proposés au-dessus du clavier. Quand la
+    /// Secure Enclave garde la clé du coffre, le propriétaire s'authentifie d'abord.
+    private func syncIdentities() async {
+        let context = LAContext()
+        if store.isEnclaveProtected() {
+            guard await BiometricAuth.authenticate(
+                context: context, reason: "Proposer vos identifiants KeyForge au-dessus du clavier"
+            ) else { return }
+        }
+        if let opened = try? store.open(context: context) {
+            AutoFillIdentities.sync(opened.items)
+        }
+    }
+
     @discardableResult
-    private func load() -> Bool {
+    private func load(_ context: LAContext) -> Bool {
         do {
-            items = try store.load()
+            items = try store.open(context: context).items
             return true
         } catch {
             phase = .failed("Le coffre est illisible : \(error.localizedDescription)")

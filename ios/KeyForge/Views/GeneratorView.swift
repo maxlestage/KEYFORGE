@@ -38,9 +38,15 @@ struct GeneratorView: View {
             }
             .sheet(item: $saving) { item in
                 VaultEditView(item: item, isNew: true) { saved in
-                    vault.add(saved)
-                    toasts.show("Enregistré dans le coffre", symbol: "lock.shield.fill")
-                    Haptics.success()
+                    Task {
+                        guard await vault.add(saved) else {
+                            toasts.show("Non enregistré : le coffre est resté fermé", symbol: "lock.slash.fill")
+                            Haptics.warning()
+                            return
+                        }
+                        toasts.show("Enregistré dans le coffre", symbol: "lock.shield.fill")
+                        Haptics.success()
+                    }
                 }
             }
             .sheet(isPresented: Binding(get: { sharing != nil }, set: { if !$0 { sharing = nil } })) {

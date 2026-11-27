@@ -478,14 +478,21 @@ struct ReceiveEncryptedView: View {
                 .buttonStyle(.bordered)
                 .tint(.ember)
                 Button {
-                    vault.add(VaultItem(
+                    let item = VaultItem(
                         title: "Reçu · \(received.senderFingerprint.prefix(9))",
                         password: received.text,
                         notes: "Reçu chiffré en post-quantique (Brocolis v4) de la clé \(received.senderFingerprint)."
-                    ))
-                    Haptics.success()
-                    withAnimation(.spring) { saved = true }
-                    toasts.show("Rangé dans le coffre", symbol: "tray.and.arrow.down.fill")
+                    )
+                    Task {
+                        guard await vault.add(item) else {
+                            toasts.show("Non rangé : le coffre est resté fermé", symbol: "lock.slash.fill")
+                            Haptics.warning()
+                            return
+                        }
+                        Haptics.success()
+                        withAnimation(.spring) { saved = true }
+                        toasts.show("Rangé dans le coffre", symbol: "tray.and.arrow.down.fill")
+                    }
                 } label: {
                     Label(saved ? "Rangé" : "Ranger dans le coffre", systemImage: saved ? "checkmark" : "tray.and.arrow.down.fill")
                         .contentTransition(.symbolEffect(.replace))

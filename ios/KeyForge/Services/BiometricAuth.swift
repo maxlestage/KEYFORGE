@@ -43,14 +43,26 @@ enum BiometricAuth {
     /// Asks the owner to authenticate. Without any passcode on the device (the
     /// simulator, for instance), the vault opens: there is nothing to check against.
     static func authenticate(reason: String = "Déverrouillez votre coffre KeyForge") async -> Bool {
-        let context = LAContext()
+        await authenticate(context: LAContext(), reason: reason)
+    }
+
+    /// The same, with a context the caller keeps: once authenticated, it lets the Secure
+    /// Enclave release the vault key without asking again. No further prompt can come
+    /// from this context afterwards (`interactionNotAllowed`): a later use that would
+    /// need one fails instead of blocking the app.
+    static func authenticate(
+        context: LAContext, reason: String = "Déverrouillez votre coffre KeyForge"
+    ) async -> Bool {
         context.localizedCancelTitle = "Annuler"
         var error: NSError?
         guard context.canEvaluatePolicy(.deviceOwnerAuthentication, error: &error) else {
+            context.interactionNotAllowed = true
             return true
         }
         do {
-            return try await context.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: reason)
+            let ok = try await context.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: reason)
+            context.interactionNotAllowed = true
+            return ok
         } catch {
             return false
         }
